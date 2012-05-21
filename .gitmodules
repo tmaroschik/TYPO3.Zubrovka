@@ -1,0 +1,3 @@
+[submodule "Resources/Private/PHP/PHP-Parser"]
+	path = Resources/Private/PHP/PHP-Parser
+	url = https://github.com/tmaroschik/PHP-Parser.git
