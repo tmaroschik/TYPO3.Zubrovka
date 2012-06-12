@@ -16,21 +16,40 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class ReplaceNameWithFullyQualifiedNameOperation extends AbstractOperation {
 
 	/**
-	 * Contains node
+	 * Contains the class name node
 	 *
-	 * @var \PHPParser_Node
+	 * @var \PHPParser_Node_Name
 	 */
 	protected $node;
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	/**
+	 * Contains the new relative name
+	 *
+	 * @var \PHPParser_Node_Name_FullyQualified
+	 */
+	protected $fullyQualifiedName;
+
+	/**
+	 * @param \PHPParser_Node_Name $node
+	 * @param \PHPParser_Node_Name_FullyQualified $parts
+	 */
+	function __construct(\PHPParser_Node_Name $node, \PHPParser_Node_Name_FullyQualified $fullyQualifiedName) {
+		$this->fullyQualifiedName = $fullyQualifiedName;
+		parent::__construct($node);
 	}
 
-	public function getNode() {
-		return $this->node;
+	/**
+	 * @return bool
+	 */
+	public function execute() {
+		$parent = $this->node->getParent();
+		$parentSubNodeName = $this->node->getParentSubNodeName();
+		$parent->{'set' . ucfirst($parentSubNodeName)}($this->fullyQualifiedName);
+		return true;
 	}
+
 
 }

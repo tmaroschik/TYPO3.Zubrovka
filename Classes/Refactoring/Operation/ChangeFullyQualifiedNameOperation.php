@@ -16,21 +16,38 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class ChangeFullyQualifiedNameOperation extends AbstractOperation {
 
 	/**
-	 * Contains node
+	 * Contains the fully qualified name node
 	 *
-	 * @var \PHPParser_Node
+	 * @var \PHPParser_Node_Name_FullyQualified
 	 */
 	protected $node;
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	/**
+	 * Contains the new fully qualified name name
+	 *
+	 * @var array
+	 */
+	protected $name;
+
+	/**
+	 * @param \PHPParser_Node_Name_FullyQualified $node
+	 * @param array $name
+	 */
+	function __construct(\PHPParser_Node_Name_FullyQualified $node, array $name) {
+		$this->name = $name;
+		parent::__construct($node);
 	}
 
-	public function getNode() {
-		return $this->node;
+	/**
+	 * @return bool
+	 */
+	public function execute() {
+		$this->node->set($this->name);
+		return true;
 	}
+
 
 }

@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Task;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,21 +16,27 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class ChangeFullyQualifiedNameInDocCommentTask extends AbstractTask {
 
 	/**
-	 * Contains node
+	 * Contains a list of objective types that could be satisfied
 	 *
-	 * @var \PHPParser_Node
+	 * @var array
 	 */
-	protected $node;
+	protected $satisfiableObjectiveTypes = array(
+		'TYPO3\Zubrovka\Refactoring\Objective\ChangeFullyQualifiedNameInDocComment'
+	);
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
-	}
-
-	public function getNode() {
-		return $this->node;
+	/**
+	 * @return int The score how good the the task can satisfy the objective
+	 */
+	public function canSatisfyObjectives() {
+		/** @var $objective \TYPO3\Zubrovka\Refactoring\Objective\ChangeClassNameObjective */
+		$objective = current($this->objectives);
+		if (FALSE === $objective && !$objective instanceof \TYPO3\Zubrovka\Refactoring\Objective\ChangeFullyQualifiedNameInDocCommentObjective) {
+			return 0;
+		}
+		return 50;
 	}
 
 }

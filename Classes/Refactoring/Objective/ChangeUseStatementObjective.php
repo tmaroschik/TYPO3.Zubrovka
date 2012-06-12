@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Objective;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,21 +16,21 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class ChangeUseStatementObjective extends AbstractObjective {
+//
+//	/**
+//	 * @param array $nodes
+//	 */
+//	public function plan(array $nodes, \TYPO3\Zubrovka\Refactoring\OperationQueue $queue) {
+//		$this->setState(self::STATE_PLANED);
+//		return $this;
+//	}
 
-	/**
-	 * Contains node
-	 *
-	 * @var \PHPParser_Node
-	 */
-	protected $node;
-
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
-	}
-
-	public function getNode() {
-		return $this->node;
-	}
-
+//	/**
+//	 * @return void
+//	 */
+//	public function run() {
+//		$newUseName = array_slice($this->newName->getParts(), 0, count($this->node->getName()->getParts()));
+//		$this->node->getName()->set($newUseName);
+//	}
 }

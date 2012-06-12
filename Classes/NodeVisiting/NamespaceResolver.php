@@ -48,28 +48,32 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 	public function enterNode(\PHPParser_Node $node) {
 		switch ($node) {
 			case $node instanceof \PHPParser_Node_Stmt_Namespace:
-				$this->namespace = $node->name;
+				/** @var $node \PHPParser_Node_Stmt_Namespace */
+				$this->namespace = $node;
 				$this->namespaceUsedBy = array();
 				$this->aliases   = array();
 				$this->aliasesUsedBy = array();
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_UseUse:
-				if (isset($this->aliases[$node->alias])) {
-					throw new \PHPParser_Error(sprintf('Cannot use "%s" as "%s" because the name is already in use', $node->name, $node->alias), $node->getLine());
+				/** @var $node \PHPParser_Node_Stmt_UseUse */
+				if (isset($this->aliases[$node->getAlias()])) {
+					throw new \PHPParser_Error(sprintf('Cannot use "%s" as "%s" because the name is already in use', $node->getName(), $node->getAlias()), $node->getLine());
 				}
-				$this->aliases[$node->alias] = $node;
+				$this->aliases[$node->getAlias()] = $node;
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Class:
-				if (null !== $node->extends) {
-					$this->resolveNamespaceUsage($node->extends);
+				/** @var $node \PHPParser_Node_Stmt_Class */
+				if (null !== $node->getExtends()) {
+					$this->resolveNamespaceUsage($node->getExtends());
 				}
-				foreach ($node->implements as &$interface) {
+				foreach ($node->getImplements() as $interface) {
 					$this->resolveNamespaceUsage($interface);
 				}
 				$this->addNamespaceUsage($node);
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Interface:
-				foreach ($node->extends as &$interface) {
+				/** @var $node \PHPParser_Node_Stmt_Interface */
+				foreach ($node->getExtends() as $interface) {
 					$this->resolveNamespaceUsage($interface);
 				}
 				$this->addNamespaceUsage($node);
@@ -81,7 +85,8 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 				$this->addNamespaceUsage($node);
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Const:
-				foreach ($node->consts as $const) {
+				/** @var $node \PHPParser_Node_Stmt_Const */
+				foreach ($node->getConsts() as $const) {
 					$this->addNamespaceUsage($const);
 				}
 				break;
@@ -90,24 +95,28 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 					|| $node instanceof \PHPParser_Node_Expr_ClassConstFetch
 					|| $node instanceof \PHPParser_Node_Expr_New
 					|| $node instanceof \PHPParser_Node_Expr_Instanceof:
-				if ($node->class instanceof \PHPParser_Node_Name) {
-					$this->resolveNamespaceUsage($node->class);
+				/** @var $node \PHPParser_Node_Expr_StaticCall */
+				if ($node->getClass() instanceof \PHPParser_Node_Name) {
+					$this->resolveNamespaceUsage($node->getClass());
 				}
 				break;
 			case $node instanceof \PHPParser_Node_Expr_FuncCall
 					|| $node instanceof \PHPParser_Node_Expr_ConstFetch:
-				if ($node->name instanceof \PHPParser_Node_Name) {
-					$this->resolveOtherNameUsage($node->name);
+				/** @var $node \PHPParser_Node_Expr_FuncCall */
+				if ($node->getName() instanceof \PHPParser_Node_Name) {
+					$this->resolveOtherNameUsage($node->getName());
 				}
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_TraitUse:
-				foreach ($node->traits as &$trait) {
+				/** @var $node \PHPParser_Node_Stmt_TraitUse */
+				foreach ($node->getTraits() as $trait) {
 					$this->resolveNamespaceUsage($trait);
 				}
 				break;
 			case $node instanceof \PHPParser_Node_Param:
-				if ($node->type instanceof \PHPParser_Node_Name) {
-					$this->resolveNamespaceUsage($node->type);
+				/** @var $node \PHPParser_Node_Param */
+				if ($node->getType() instanceof \PHPParser_Node_Name) {
+					$this->resolveNamespaceUsage($node->getType());
 				}
 				break;
 		}
@@ -118,6 +127,7 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 			if (null !== $this->namespace) {
 				$this->namespace->setAttribute('usedBy', $this->namespaceUsedBy);
 			}
+			/** @var $alias \PHPParser_Node_Stmt_UseUse */
 			foreach ($this->aliases as $key => $alias) {
 				if (isset($this->aliasesUsedBy[$key])) {
 					$alias->setAttribute('usedBy', $this->aliasesUsedBy[$key]);
@@ -170,7 +180,7 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 			}
 			return;
 		} elseif ($name->isUnqualified()) {
-			if (null !== $this->namespace) {
+			if (null !== $this->namespace && count($name->getParts()) > 1) {
 				$this->namespaceUsedBy[] = $name;
 				$name->setAttribute('namespace', $this->namespace);
 			}

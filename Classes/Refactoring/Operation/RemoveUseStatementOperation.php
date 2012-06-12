@@ -16,21 +16,46 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class RemoveUseStatementOperation extends AbstractOperation {
 
 	/**
-	 * Contains node
+	 * Contains the use statement node
 	 *
-	 * @var \PHPParser_Node
+	 * @var \PHPParser_Node_Stmt_UseUse
 	 */
 	protected $node;
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	/**
+	 * Contains the new use statement name
+	 *
+	 * @var array
+	 */
+	protected $name;
+
+	/**
+	 * Contains the new use statement alias
+	 *
+	 * @var string
+	 */
+	protected $alias;
+
+	/**
+	 * @param \PHPParser_Node_Stmt_UseUse $node
+	 * @param array $name
+	 * @param null|string $alias
+	 */
+	function __construct(\PHPParser_Node_Stmt_UseUse $node) {
+		parent::__construct($node);
 	}
 
-	public function getNode() {
-		return $this->node;
+
+	/**
+	 * @return bool
+	 */
+	public function execute() {
+		$parent = $this->node->getParent();
+		$parent->removeUse($this->node);
+		return true;
 	}
 
 }

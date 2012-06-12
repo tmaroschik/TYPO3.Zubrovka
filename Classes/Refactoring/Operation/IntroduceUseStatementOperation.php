@@ -16,20 +16,49 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeUseStatement extends AbstractOperation {
+class IntroduceUseStatementOperation extends AbstractOperation {
 
 	/**
-	 * @param array $nodes
+	 * Contains the use statement node
+	 *
+	 * @var \PHPParser_Node_Stmt_Use
 	 */
-	public function prepare(array $nodes, \TYPO3\Zubrovka\Refactoring\OperationQueue $queue) {
-		return $this;
-	}
+	protected $node;
 
 	/**
-	 * @return void
+	 * Contains the new use statement name
+	 *
+	 * @var array
 	 */
-	public function run() {
-		$newUseName = array_splice($this->newName->parts, 0, count($this->node->name->parts));
-		$this->node->name->set($newUseName);
+	protected $name;
+
+	/**
+	 * Contains the new use statement alias
+	 *
+	 * @var string
+	 */
+	protected $alias;
+
+	/**
+	 * @param \PHPParser_Node_Stmt_Use $node
+	 * @param array $name
+	 * @param null|string $alias
+	 */
+	function __construct(\PHPParser_Node_Stmt_Use $node, array $name, $alias = null) {
+		$this->name = $name;
+		$this->alias = $alias;
+		parent::__construct($node);
 	}
+
+
+	/**
+	 * @return bool
+	 */
+	public function execute() {
+		$name = new \PHPParser_Node_Name($this->name);
+		$newUse = new \PHPParser_Node_Stmt_UseUse($name, $this->alias);
+		$this->node->appendUse($newUse);
+		return true;
+	}
+
 }

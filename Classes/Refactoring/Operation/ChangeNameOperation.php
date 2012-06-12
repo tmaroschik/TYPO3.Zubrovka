@@ -16,21 +16,38 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class ChangeNameOperation extends AbstractOperation {
 
 	/**
-	 * Contains node
+	 * Contains the class name node
 	 *
-	 * @var \PHPParser_Node
+	 * @var \PHPParser_Node_Name
 	 */
 	protected $node;
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	/**
+	 * Contains the new relative name
+	 *
+	 * @var array
+	 */
+	protected $parts;
+
+	/**
+	 * @param \PHPParser_Node_Name $node
+	 * @param array $parts
+	 */
+	function __construct(\PHPParser_Node_Name $node, array $parts) {
+		$this->parts = $parts;
+		parent::__construct($node);
 	}
 
-	public function getNode() {
-		return $this->node;
+	/**
+	 * @return bool
+	 */
+	public function execute() {
+		$this->node->setParts($this->parts);
+		return true;
 	}
+
 
 }

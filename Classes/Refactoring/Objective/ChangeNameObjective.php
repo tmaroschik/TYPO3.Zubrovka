@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Objective;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,21 +16,27 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class ChangeNameObjective extends AbstractObjective {
 
 	/**
-	 * Contains node
-	 *
-	 * @var \PHPParser_Node
+	 * @var \PHPParser_Node_Name
 	 */
-	protected $node;
+	protected $newName;
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	/**
+	 * @param \PHPParser_Node $node
+	 * @param \PHPParser_Node_Name $newName
+	 */
+	public function __construct(\PHPParser_Node_Name $node, \PHPParser_Node_Name $newName) {
+		$this->newName = $newName;
+		parent::__construct($node);
 	}
 
-	public function getNode() {
-		return $this->node;
+	/**
+	 * @return \PHPParser_Node_Name
+	 */
+	public function getNewName() {
+		return $this->newName;
 	}
 
 }

@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Mission;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,21 +16,21 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+abstract class AbstractMission implements MissionInterface  {
+
 
 	/**
-	 * Contains node
+	 * Contains analyzer
 	 *
-	 * @var \PHPParser_Node
+	 * @var \TYPO3\Zubrovka\Refactoring\Analysis\AnalyzerInterface
 	 */
-	protected $node;
+	protected $analyzer;
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
-	}
-
-	public function getNode() {
-		return $this->node;
+	/**
+	 * @return \TYPO3\Zubrovka\Refactoring\Analysis\AnalyzerInterface
+	 */
+	public function getAnalyzer() {
+		return $this->analyzer;
 	}
 
 }

@@ -43,28 +43,36 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 	public function enterNode(\PHPParser_Node $node) {
 		switch ($node) {
 			case $node instanceof \PHPParser_Node_Stmt_Namespace:
-				$this->namespace = $node->name;
+				/** @var $node \PHPParser_Node_Stmt_Namespace */
+				$this->namespace = $node->getName();
 				$this->aliases   = array();
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_UseUse:
-				if (isset($this->aliases[$node->alias])) {
-					throw new \PHPParser_Error(sprintf('Cannot use "%s" as "%s" because the name is already in use', $node->name, $node->alias), $node->getLine());
+				/** @var $node \PHPParser_Node_Stmt_UseUse */
+				if (isset($this->aliases[$node->getAlias()])) {
+					throw new \PHPParser_Error(sprintf('Cannot use "%s" as "%s" because the name is already in use', $node->getName(), $node->getAlias()), $node->getLine());
 				}
-				$this->aliases[$node->alias] = $node;
+				$this->aliases[$node->getAlias()] = $node;
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Class:
-				if (null !== $node->extends) {
-					$node->extends = $this->resolveClassName($node->extends);
+				/** @var $node \PHPParser_Node_Stmt_Class */
+				if (null !== $node->getExtends()) {
+					$node->setExtends($this->resolveClassName($node->getExtends()));
 				}
-				foreach ($node->implements as &$interface) {
+				$implements = $node->getImplements();
+				foreach ($implements as &$interface) {
 					$interface = $this->resolveClassName($interface);
 				}
+				$node->setImplements($implements);
 				$this->addNamespacedName($node);
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Interface:
-				foreach ($node->extends as &$interface) {
+				/** @var $node \PHPParser_Node_Stmt_Interface */
+				$extends = $node->getExtends();
+				foreach ($extends as &$interface) {
 					$interface = $this->resolveClassName($interface);
 				}
+				$node->setExtends($extends);
 				$this->addNamespacedName($node);
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Trait:
@@ -74,7 +82,8 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 				$this->addNamespacedName($node);
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Const:
-				foreach ($node->consts as $const) {
+				/** @var $node \PHPParser_Node_Stmt_Const */
+				foreach ($node->getConsts() as $const) {
 					$this->addNamespacedName($const);
 				}
 				break;
@@ -83,24 +92,30 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 					|| $node instanceof \PHPParser_Node_Expr_ClassConstFetch
 					|| $node instanceof \PHPParser_Node_Expr_New
 					|| $node instanceof \PHPParser_Node_Expr_Instanceof:
-				if ($node->class instanceof \PHPParser_Node_Name) {
-					$node->class = $this->resolveClassName($node->class);
+				/** @var $node \PHPParser_Node_Expr_StaticCall */
+				if ($node->getClass() instanceof \PHPParser_Node_Name) {
+					$node->setClass($this->resolveClassName($node->getClass()));
 				}
 				break;
 			case $node instanceof \PHPParser_Node_Expr_FuncCall
 					|| $node instanceof \PHPParser_Node_Expr_ConstFetch:
-				if ($node->name instanceof \PHPParser_Node_Name) {
-					$node->name = $this->resolveOtherName($node->name);
+				/** @var $node \PHPParser_Node_Expr_FuncCall */
+				if ($node->getName() instanceof \PHPParser_Node_Name) {
+					$node->setName($this->resolveOtherName($node->getName()));
 				}
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_TraitUse:
-				foreach ($node->traits as &$trait) {
+				/** @var $node \PHPParser_Node_Stmt_TraitUse */
+				$traits = $node->getTraits();
+				foreach ($traits as &$trait) {
 					$trait = $this->resolveClassName($trait);
 				}
+				$node->setTraits($traits);
 				break;
 			case $node instanceof \PHPParser_Node_Param:
-				if ($node->type instanceof \PHPParser_Node_Name) {
-					$node->type = $this->resolveClassName($node->type);
+				/** @var $node \PHPParser_Node_Param */
+				if ($node->getType() instanceof \PHPParser_Node_Name) {
+					$node->setType($this->resolveClassName($node->getType()));
 				}
 				break;
 		}
@@ -125,16 +140,17 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 		// resolve aliases (for relative names)
 		if ($name->isQualified() && isset($this->aliases[$name->getFirst()])) {
 			// has an alias
+			/** @var $useStmt \PHPParser_Node_Stmt_UseUse */
 			$useStmt        = $this->aliases[$name->getFirst()];
-			$namespacedName = new \PHPParser_Node_Name_FullyQualified($useStmt->name->parts);
-			$namespacedName->append(array_slice($name->parts, 1));
+			$namespacedName = new \PHPParser_Node_Name_FullyQualified($useStmt->getName()->getParts());
+			$namespacedName->append(array_slice($name->getParts(), 1));
 			$name->setAttribute('namespacedName', $namespacedName);
 			return $name;
 		} elseif (NULL !== $this->namespace) {
-			$name = new \PHPParser_Node_Name_Relative($name->parts);
+			$name = new \PHPParser_Node_Name_Relative($name->getParts());
 			if (null !== $this->namespace) {
 				$namespacedName = new \PHPParser_Node_Name_FullyQualified($this->namespace);
-				$namespacedName->append($name->parts);
+				$namespacedName->append($name->getParts());
 				$name->setAttribute('namespacedName', $namespacedName);
 			}
 			return $name;
@@ -155,7 +171,7 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 			}
 			return $name;
 		} elseif ($name->isUnqualified()) {
-			if (null !== $this->namespace) {
+			if (null !== $this->namespace && count($name->getParts()) > 1) {
 				$namespacedName = clone $name;
 				$namespacedName->prepend($this->namespace);
 				$name->setAttribute('namespacedName', $namespacedName);
@@ -164,12 +180,12 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 		}
 		// resolve aliases for qualified names
 		if ($name->isQualified() && isset($this->aliases[$name->getFirst()])) {
-			$name->setFirst($this->aliases[$name->getFirst()]->name);
+			$name->setFirst($this->aliases[$name->getFirst()]->getName());
 			// prepend namespace for relative names
 		} elseif (null !== $this->namespace) {
 			$name->prepend($this->namespace);
 		}
-		$fullyQualifiedName = new \PHPParser_Node_Name_FullyQualified($name->parts);
+		$fullyQualifiedName = new \PHPParser_Node_Name_FullyQualified($name->getParts());
 		$fullyQualifiedName->setAttribute('namespacedName', clone $fullyQualifiedName);
 		return $fullyQualifiedName;
 	}
@@ -180,7 +196,7 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 	protected function addNamespacedName(\PHPParser_Node $node) {
 		if (null !== $this->namespace) {
 			$namespacedName = new \PHPParser_Node_Name_FullyQualified($this->namespace);
-			$namespacedName->append($node->name);
+			$namespacedName->append($node->getName());
 			$node->setAttribute('namespacedName', $namespacedName);
 		}
 	}

@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Analysis;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -11,17 +11,12 @@ namespace TYPO3\Zubrovka\Refactoring\Operation;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-use TYPO3\FLOW3\Annotations as FLOW3;
-
-/**
- * @FLOW3\Scope("prototype")
- */
-class ChangeFullyQualifiedName extends AbstractOperation {
+interface AnalyzerInterface {
 
 	/**
-	 *
+	 * @abstract
+	 * @return \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface[]
 	 */
-	public function run() {
-		$this->node->set($this->newName->parts);
-	}
+	public function getObjectives();
+
 }

@@ -16,7 +16,12 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeFullyQualifiedNameInDocComment extends AbstractOperation {
+class ChangeRelativeNameInDocCommentOperation extends AbstractOperation {
+
+	/**
+	 * @var \PHPParser_Node_Ignorable_DocComment
+	 */
+	protected $node;
 
 	/**
 	 * @var string
@@ -29,41 +34,45 @@ class ChangeFullyQualifiedNameInDocComment extends AbstractOperation {
 	protected $tagValue;
 
 	/**
-	 * @param \PHPParser_Node $
-	 * @param \PHPParser_Node_Name $newName
+	 * @var array
 	 */
-	public function __construct(\PHPParser_Node $node, $tagName, $tagValue, \PHPParser_Node_Name $newName) {
-		$this->node = $node;
+	protected $newName;
+
+	/**
+	 * @param \PHPParser_Node $node
+	 * @param string $tagName
+	 * @param string $tagValue
+	 * @param array $newName
+	 */
+	public function __construct(\PHPParser_Node_Ignorable_DocComment $node, $tagName, $tagValue, array $newName) {
 		$this->tagName = $tagName;
 		$this->tagValue = $tagValue;
 		$this->newName = $newName;
+		parent::__construct($node);
 	}
 
 	/**
-	 * @param array $nodes
+	 * @return bool
 	 */
-	public function prepare(array $nodes, \TYPO3\Zubrovka\Refactoring\OperationQueue $queue) {
-		return $this;
-	}
-
-	/**
-	 * @return void
-	 */
-	public function run() {
-		if (isset($this->node->tags[$this->tagName])) {
-			foreach ($this->node->tags[$this->tagName] as &$tagValue) {
+	public function execute() {
+		if ($this->node->isTaggedWith($this->tagName)) {
+			$tagsValues =& $this->node->getTagsValues();
+			foreach ($tagsValues[$this->tagName] as &$tagValue) {
 				if ($tagValue == $this->tagValue) {
 					$typeAndComment = preg_split('/\s/', $tagValue, 2);
-					$tagValue = (string) $this->newName;
+					$tagValue = implode('\\', $this->newName);
 					$type = $typeAndComment[0] ?: '';
 					if (substr($type, 0, 1) == '$') {
 						$tagValue = $type . ' ' . $tagValue;
 					} elseif (isset($typeAndComment[1])) {
 						$tagValue = $tagValue . ' ' . $typeAndComment[1];
 					}
-					break;
+					return true;
 				}
 			}
 		}
+		return false;
 	}
+
+
 }

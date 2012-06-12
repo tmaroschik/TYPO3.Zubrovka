@@ -88,9 +88,13 @@ class OperationQueue implements \Iterator, \Countable, \ArrayAccess {
 	 * @throws \InvalidArgumentException
 	 */
 	public function offsetSet($offset, $operation) {
-		$offset = spl_object_hash($offset);
+		$offset               = spl_object_hash($operation);
+		$type                 = get_class($operation);
 		$this->queue[$offset] = $operation;
-		$this->types[get_class($operation)][$offset] &= $this->queue[$offset];
+		if (!isset($this->types[$type])) {
+			$this->types[$type] = array();
+		}
+		$this->types[$type][$offset] = $this->queue[$offset];
 	}
 
 	/**
@@ -137,15 +141,62 @@ class OperationQueue implements \Iterator, \Countable, \ArrayAccess {
 	}
 
 	/**
+	 * @param string $type
+	 * @return array
+	 */
+	public function getOperationByType($type) {
+		$type = ltrim($type, '\\');
+		if (isset($this->types[$type])) {
+			return $this->types[$type];
+		}
+		return array();
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getCommisionedOperations() {
+		return $this->filterOperationsByState(Operation\OperationInterface::STATE_COMMISIONED);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getPlanedOperations() {
+		return $this->filterOperationsByState(Operation\OperationInterface::STATE_PLANED);
+	}
+
+	/**
+	 * @param int $state
+	 * @return array
+	 */
+	protected function filterOperationsByState($state) {
+		$filtered = array();
+		/** @var $operation Operation\OperationInterface */
+		foreach ($this->queue as $offset => $operation) {
+			if ($operation->getState() === $state) {
+				$filtered[$offset] = $operation;
+			}
+		}
+		return $filtered;
+	}
+
+	/**
 	 * @param array $nodes
 	 * @return \TYPO3\Zubrovka\Refactoring\OperationQueue
 	 */
-	public function run() {
-		/** @var \TYPO3\Zubrovka\Refactoring\Operation\OperationInterface $operation */
-		foreach ($this->queue as $operation) {
-			$operation->run();
+	public function run($nodes) {
+		// Plan as long as there are commisioned nodes
+		while (count($commissionedOperations = $this->getCommisionedOperations()) !== 0) {
+			/** @var \TYPO3\Zubrovka\Refactoring\Operation\OperationInterface $commissionedOperation */
+			foreach ($commissionedOperations as $commissionedOperation) {
+				$commissionedOperation->plan($nodes, $this);
+			}
 		}
-		return $this;
+		foreach ($this->queue as $operation) {
+			$operation->run($nodes);
+		}
+		return $nodes;
 	}
 
 }

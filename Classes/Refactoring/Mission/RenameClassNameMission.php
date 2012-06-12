@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Mission;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,21 +16,40 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+class RenameClassNameMission extends AbstractMission  {
 
 	/**
-	 * Contains node
-	 *
-	 * @var \PHPParser_Node
+	 * @var string
 	 */
-	protected $node;
+	protected $oldName;
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	/**
+	 * @var string
+	 */
+	protected $newName;
+
+	/**
+	 * @param string $oldName
+	 * @param string $newName
+	 */
+	function __construct($oldName, $newName) {
+		$this->oldName = $oldName;
+		$this->newName = $newName;
+		$this->analyzer = new \TYPO3\Zubrovka\Refactoring\Analysis\ChangeClassNameAnalyzer($oldName, $newName);
 	}
 
-	public function getNode() {
-		return $this->node;
+	/**
+	 * @return string
+	 */
+	public function getNewName() {
+		return $this->newName;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOldName() {
+		return $this->oldName;
 	}
 
 }

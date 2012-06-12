@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Task;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -11,26 +11,31 @@ namespace TYPO3\Zubrovka\Refactoring\Operation;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-use TYPO3\FLOW3\Annotations as FLOW3;
-
-/**
- * @FLOW3\Scope("prototype")
- */
-abstract class AbstractOperation implements OperationInterface  {
+interface TaskInterface {
 
 	/**
-	 * Contains node
-	 *
-	 * @var \PHPParser_Node
+	 * @abstract
+	 * @return array
 	 */
-	protected $node;
+	public function getSatisfiableObjectiveTypes();
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
-	}
+	/**
+	 * @abstract
+	 * @param \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface[] $objectives
+	 * @return TaskInterface
+	 */
+	public function setObjectives(array $objectives);
 
-	public function getNode() {
-		return $this->node;
-	}
+	/**
+	 * @abstract
+	 * @return int The score how good the the task can satisfy the objective
+	 */
+	public function canSatisfyObjectives();
+
+	/**
+	 * @abstract
+	 * @return \TYPO3\Zubrovka\Refactoring\Operation\OperationInterface[]
+	 */
+	public function getOperations();
 
 }

@@ -11,6 +11,8 @@ namespace TYPO3\Zubrovka\Tests\Functional\NodeVisiting;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
+use \TYPO3\Zubrovka\Refactoring;
+
 /**
  * Test suite for Class Name Rewriter
  *
@@ -28,12 +30,26 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	protected $prettyPrinter;
 
 	/**
+	 * @var \TYPO3\Zubrovka\Refactoring\OperationQueue
+	 */
+	protected $operationQueue;
+
+	/**
+	 * @var \PHPParser_NodeTraverser
+	 */
+	protected $traverser;
+
+	/**
 	 * Sets up test requirements depending on the enabled tests.
 	 * @return void
 	 */
 	public function setUp() {
 		$this->parser = new \PHPParser_Parser;
 		$this->prettyPrinter = new \PHPParser_PrettyPrinter_TYPO3CGL;
+		$this->operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
+		$this->traverser = new \PHPParser_NodeTraverser;
+		$this->traverser->appendVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
+		$this->traverser->appendVisitor (new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
 		parent::setUp();
 	}
 
@@ -41,189 +57,163 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	 * @test
 	 */
 	public function renameClassAndTypeHint() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Tx_PhpParser_Test_ClassMethodWithManyParameter', 'ClassMethodWithManyParameter', $operationQueue));
-		$stmts = $this->getParsedSource('ClassMethodWithManyParameter');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameClassAndTypeHint'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_ClassMethodWithManyParameter', 'ClassMethodWithManyParameter'));
+		$codeRefactorer->load($this->getSource('ClassMethodWithManyParameter'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameClassAndTypeHint'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameSimpleNamespace() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model\SimpleNamepaceTest', 'Test\Test2\SimpleNamepaceTest', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespace');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameSimpleNamespace'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamepaceTest', 'Test\Test2\SimpleNamepaceTest'));
+		$codeRefactorer->load($this->getSource('SimpleNamespace'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameSimpleNamespace'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameSimpleNamespacedClassName() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model\SimpleNamepaceTest', 'Test\Model\RenamedSimpleNamespacedClass', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespace');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameSimpleNamespacedClassName'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamepaceTest', 'Test\Model\RenamedSimpleNamespacedClass'));
+		$codeRefactorer->load($this->getSource('SimpleNamespace'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameSimpleNamespacedClassName'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameSimpleNamespacedExtendedClassName() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model\SimpleNamespaceExtendedClass', 'Test\Model\RenamedSimpleNamespaceExtendedClass', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespaceExtendedClass');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameSimpleNamespacedExtendedClassName'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamespaceExtendedClass', 'Test\Model\RenamedSimpleNamespaceExtendedClass'));
+		$codeRefactorer->load($this->getSource('SimpleNamespaceExtendedClass'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameSimpleNamespacedExtendedClassName'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameSimpleNamespacedClassAndNamespace() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model\SimpleNamepaceTest', 'Test\Test2\RenameSimpleNamespacedClassAndNamespace', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespace');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameSimpleNamespacedClassAndNamespace'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamepaceTest', 'Test\Test2\RenameSimpleNamespacedClassAndNamespace'));
+		$codeRefactorer->load($this->getSource('SimpleNamespace'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameSimpleNamespacedClassAndNamespace'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function extendSimpleNamespace() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model\SimpleNamepaceTest', 'Test\Test2\Model\SimpleNamepaceTest', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespace');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('ExtendSimpleNamespace'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamepaceTest', 'Test\Test2\Model\SimpleNamepaceTest'));
+		$codeRefactorer->load($this->getSource('SimpleNamespace'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('ExtendSimpleNamespace'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function reduceSimpleNamespace() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model\SimpleNamepaceTest', 'Test\SimpleNamepaceTest', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespace');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('ReduceSimpleNamespace'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamepaceTest', 'Test\SimpleNamepaceTest'));
+		$codeRefactorer->load($this->getSource('SimpleNamespace'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('ReduceSimpleNamespace'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameFirstNamespaceInMultipleNamespaces() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model\MultipleNamespaces', 'Test\ChangedNamespace\MultipleNamespaces', $operationQueue));
-		$stmts = $this->getParsedSource('MultipleNamespaces');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameFirstNamespaceInMultipleNamespaces'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\MultipleNamespaces', 'Test\ChangedNamespace\MultipleNamespaces'));
+		$codeRefactorer->load($this->getSource('MultipleNamespaces'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameFirstNamespaceInMultipleNamespaces'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameSecondNamespaceInMultipleNamespaces() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('Test\Model2\MultipleNamespaces', 'Test\ChangedNamespace\MultipleNamespaces', $operationQueue));
-		$stmts = $this->getParsedSource('MultipleNamespaces');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameSecondNamespaceInMultipleNamespaces'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model2\MultipleNamespaces', 'Test\ChangedNamespace\MultipleNamespaces'));
+		$codeRefactorer->load($this->getSource('MultipleNamespaces'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameSecondNamespaceInMultipleNamespaces'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameImportedClassName() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('\Foo\Bar\Buh', '\Foo\Bar\FOOO', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespaceWithUseStatement');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameImportedClassName'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Foo\Bar\Buh', '\Foo\Bar\FOOO'));
+		$codeRefactorer->load($this->getSource('SimpleNamespaceWithUseStatement'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameImportedClassName'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function renameImportedNamespaceAndClassName() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('\Foo\Bar\Buh', '\Foo\Boo\FOOO', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespaceWithUseStatement');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		$this->assertEquals($this->getTarget('RenameImportedNamespaceAndClassName'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Foo\Bar\Buh', '\Foo\Boo\FOOO'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Test\Model\SimpleNamepaceWithUseTest', '\Test\Model2\Test'));
+		$codeRefactorer->load($this->getSource('SimpleNamespaceWithUseStatement'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameImportedNamespaceAndClassName'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @test
 	 */
 	public function extendImportedNamespace() {
-		$operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('\Foo\Bar\Buh', '\Foo\Bar\Gah\Buh', $operationQueue));
-		$stmts = $this->getParsedSource('SimpleNamespaceWithUseStatement');
-		$stmts = $traverser->traverse($stmts);
-		$operationQueue->run($stmts);
-		var_dump($this->getNewCode($stmts));die();
-		$this->assertEquals($this->getTarget('RenameImportedNamespaceAndClassName'), $this->getNewCode($stmts));
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Foo\Bar\Buh', '\Foo\Bar\Gah\Buh'));
+		$codeRefactorer->load($this->getSource('SimpleNamespaceWithUseStatement'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('ExtendImportedNamespace'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
+	public function reduceImportedNamespace() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Foo\Bar\Buh', '\Foo\Buh'));
+		$codeRefactorer->load($this->getSource('SimpleNamespaceWithUseStatement'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('ReduceImportedNamespace'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
+	public function extendNamespacedExtendedClassName() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamepaceTest', 'Test\Model\Model2\SimpleNamepaceTest'));
+		$codeRefactorer->load($this->getSource('SimpleNamespaceExtendedClass'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('ExtendNamespacedExtendedClassName'), $codeRefactorer->save());
 	}
 
 	/**
 	 * @param string $name
-	 * @return array statements
+	 * @return string
 	 */
-	protected function getParsedSource($name) {
-		return $this->parser->parse(new \PHPParser_Lexer(file_get_contents(__DIR__ . '/Fixtures/Sources/' . $name . '.txt')));
+	protected function getSource($name) {
+		return file_get_contents(__DIR__ . '/Fixtures/Sources/' . $name . '.txt');
 	}
 
 	/**
@@ -232,14 +222,6 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	 */
 	protected function getTarget($name) {
 		return file_get_contents(__DIR__ . '/Fixtures/Targets/' . $name . '.txt');
-	}
-
-	/**
-	 * @param array $stmts
-	 * @return string
-	 */
-	protected function getNewCode(array $stmts) {
-		return '<?php' . PHP_EOL . $this->prettyPrinter->prettyPrint($stmts);
 	}
 
 }

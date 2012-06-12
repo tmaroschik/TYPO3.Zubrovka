@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\TransactionOptimizer;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -11,26 +11,10 @@ namespace TYPO3\Zubrovka\Refactoring\Operation;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-use TYPO3\FLOW3\Annotations as FLOW3;
+class NamespaceImportOptimizer implements PreCommitOptimizerInterface {
 
-/**
- * @FLOW3\Scope("prototype")
- */
-abstract class AbstractOperation implements OperationInterface  {
-
-	/**
-	 * Contains node
-	 *
-	 * @var \PHPParser_Node
-	 */
-	protected $node;
-
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	public function optimize(\TYPO3\Zubrovka\Refactoring\Transaction $transaction) {
+//		$importOperations = $transaction->getOperationsByType('TYPO3\Zubrovka\Refactoring\Operation\IntroduceUseStatementOperation');
+//		var_dump($importOperations);die();
 	}
-
-	public function getNode() {
-		return $this->node;
-	}
-
 }

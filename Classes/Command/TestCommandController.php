@@ -51,7 +51,7 @@ class TestCommandController /* FOOO */ extends \TYPO3\FLOW3\Cli\CommandControlle
 		$traverser->addVisitor(new \PHPParser_NodeVisitor_NameResolver);
 		// our own node visitor
 //		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\NamespaceConverter);
-		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ClassNameRewriter('TYPO3\FLOW3\Aop\AspectContainer', 'TYPO3\FLOW3\CoolAop\AspectContainer'));
+		$traverser->addVisitor(new \TYPO3\Zubrovka\NodeVisiting\ChangeClassNameAnalyzer('TYPO3\FLOW3\Aop\AspectContainer', 'TYPO3\FLOW3\CoolAop\AspectContainer'));
 		try {
 			// parse
 //			$stmts = $parser->parse(new \PHPParser_Lexer(file_get_contents($classesPath .'Command/TestCommandController.php')));

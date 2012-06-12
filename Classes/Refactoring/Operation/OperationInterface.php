@@ -11,36 +11,7 @@ namespace TYPO3\Zubrovka\Refactoring\Operation;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-use TYPO3\FLOW3\Annotations as FLOW3;
-
-/**
- * @FLOW3\Scope("prototype")
- */
 interface OperationInterface {
-
-	/**
-	 * default state for unplaned operations
-	 */
-	const STATE_COMMISIONED = 0;
-
-	/**
-	 * state for planed operations
-	 */
-	const STATE_PLANED = 1;
-
-	/**
-	 * @abstract
-	 * @param array $nodes
-	 * @param \TYPO3\Zubrovka\Refactoring\OperationQueue $queue
-	 * @return mixed
-	 */
-	public function prepare(array $nodes, \TYPO3\Zubrovka\Refactoring\OperationQueue $queue);
-
-	/**
-	 * @abstract
-	 * @return void
-	 */
-	public function run();
 
 	/**
 	 * @abstract
@@ -50,15 +21,8 @@ interface OperationInterface {
 
 	/**
 	 * @abstract
-	 * @param int $state has to be one of defined STATE_* constants
-	 * @return void
+	 * @return bool
 	 */
-	public function setState($state);
-
-	/**
-	 * @abstract
-	 * @return int
-	 */
-	public function getState();
+	public function execute();
 
 }

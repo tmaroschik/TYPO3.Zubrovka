@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Objective;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,31 +16,41 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeNamespaceName extends AbstractOperation {
+interface ObjectiveInterface {
 
 	/**
-	 * @param array $nodes
-	 * @param \TYPO3\Zubrovka\Refactoring\OperationQueue $queue
-	 * @return AbstractOperation
+	 * @abstract
+	 * @return \PHPParser_Node
 	 */
-	public function prepare(array $nodes, \TYPO3\Zubrovka\Refactoring\OperationQueue $queue) {
-		$usedBy = $this->node->getAttribute('usedBy');
-		if ($usedBy !== NULL) {
-			$usedBy = array_filter($usedBy, function($node) {
-				if ($node instanceof \PHPParser_Node_Stmt_Class) {
-					return false;
-				} else {
-					return true;
-				}
-			});
-		}
-	}
+	public function getNode();
 
 	/**
-	 * @return void
+	 * @return \TYPO3\Zubrovka\Refactoring\Task\TaskInterface
 	 */
-	public function run() {
-		$newNamespace = array_slice($this->newName->parts, 0, count($this->newName->parts) - 1);
-		$this->node->set($newNamespace);
-	}
+	public function setParentTask(\TYPO3\Zubrovka\Refactoring\Task\TaskInterface $parentTask = NULL);
+
+	/**
+	 * @abstract
+	 * @return \TYPO3\Zubrovka\Refactoring\Task\TaskInterface
+	 */
+	public function setTask(\TYPO3\Zubrovka\Refactoring\Task\TaskInterface  $task = NULL);
+
+	/**
+	 * @abstract
+	 * @return bool
+	 */
+	public function isSatisfied();
+
+	/**
+	 * @abstract
+	 * @return bool
+	 */
+	public function isSubObjective();
+
+	/**
+	 * @abstract
+	 * @return \TYPO3\Zubrovka\Refactoring\Task\TaskInterface
+	 */
+	public function getTask();
+
 }

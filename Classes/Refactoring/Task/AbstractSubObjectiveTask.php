@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Task;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,21 +16,22 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-abstract class AbstractOperation implements OperationInterface  {
+abstract class AbstractSubObjectiveTask extends AbstractTask implements SubObjectiveTaskInterface  {
 
 	/**
-	 * Contains node
-	 *
-	 * @var \PHPParser_Node
+	 * @var \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface[]
 	 */
-	protected $node;
+	protected $subObjectives = array();
 
-	public function __construct(\PHPParser_Node $node) {
-		$this->node = $node;
+	/**
+	 * @return \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface[]
+	 */
+	public function getSubObjectives() {
+		foreach ($this->subObjectives as $subObjective) {
+			$subObjective->setParentTask($this);
+		}
+		return $this->subObjectives;
 	}
 
-	public function getNode() {
-		return $this->node;
-	}
 
 }
