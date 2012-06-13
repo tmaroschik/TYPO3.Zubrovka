@@ -20,40 +20,6 @@ use \TYPO3\Zubrovka\Refactoring;
 class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 
 	/**
-	 * @var \PHPParser_Parser
-	 */
-	protected $parser;
-
-	/**
-	 * @var \PHPParser_PrettyPrinter_TYPO3CGL
-	 */
-	protected $prettyPrinter;
-
-	/**
-	 * @var \TYPO3\Zubrovka\Refactoring\OperationQueue
-	 */
-	protected $operationQueue;
-
-	/**
-	 * @var \PHPParser_NodeTraverser
-	 */
-	protected $traverser;
-
-	/**
-	 * Sets up test requirements depending on the enabled tests.
-	 * @return void
-	 */
-	public function setUp() {
-		$this->parser = new \PHPParser_Parser;
-		$this->prettyPrinter = new \PHPParser_PrettyPrinter_TYPO3CGL;
-		$this->operationQueue = new \TYPO3\Zubrovka\Refactoring\OperationQueue();
-		$this->traverser = new \PHPParser_NodeTraverser;
-		$this->traverser->appendVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$this->traverser->appendVisitor (new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
-		parent::setUp();
-	}
-
-	/**
 	 * @test
 	 */
 	public function renameClassAndTypeHint() {
@@ -169,7 +135,6 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	public function renameImportedNamespaceAndClassName() {
 		$codeRefactorer = new Refactoring\CodeRefactorer();
 		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Foo\Bar\Buh', '\Foo\Boo\FOOO'));
-		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Test\Model\SimpleNamepaceWithUseTest', '\Test\Model2\Test'));
 		$codeRefactorer->load($this->getSource('SimpleNamespaceWithUseStatement'));
 		$codeRefactorer->refactor();
 		$this->assertEquals($this->getTarget('RenameImportedNamespaceAndClassName'), $codeRefactorer->save());

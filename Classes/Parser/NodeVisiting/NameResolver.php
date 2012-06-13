@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\NodeVisiting;
+namespace TYPO3\Zubrovka\Parser\NodeVisiting;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -32,8 +32,8 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 	 * @param array $nodes
 	 */
 	public function beforeTraverse(array $nodes) {
-		$this->namespace = null;
-		$this->aliases   = array();
+		$this->namespace = NULL;
+		$this->aliases = array();
 	}
 
 	/**
@@ -41,11 +41,12 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 	 * @throws \PHPParser_Error
 	 */
 	public function enterNode(\PHPParser_Node $node) {
+		$this->resolveNamesInDocComment($node);
 		switch ($node) {
 			case $node instanceof \PHPParser_Node_Stmt_Namespace:
 				/** @var $node \PHPParser_Node_Stmt_Namespace */
 				$this->namespace = $node->getName();
-				$this->aliases   = array();
+				$this->aliases = array();
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_UseUse:
 				/** @var $node \PHPParser_Node_Stmt_UseUse */
@@ -56,7 +57,7 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Class:
 				/** @var $node \PHPParser_Node_Stmt_Class */
-				if (null !== $node->getExtends()) {
+				if (NULL !== $node->getExtends()) {
 					$node->setExtends($this->resolveClassName($node->getExtends()));
 				}
 				$implements = $node->getImplements();
@@ -132,7 +133,7 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 		}
 		// fully qualified names are already resolved
 		if ($name->isFullyQualified()) {
-			if (null !== $this->namespace) {
+			if (NULL !== $this->namespace) {
 				$name->setAttribute('namespacedName', new \PHPParser_Node_Name_FullyQualified($name));
 			}
 			return $name;
@@ -141,14 +142,14 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 		if ($name->isQualified() && isset($this->aliases[$name->getFirst()])) {
 			// has an alias
 			/** @var $useStmt \PHPParser_Node_Stmt_UseUse */
-			$useStmt        = $this->aliases[$name->getFirst()];
+			$useStmt = $this->aliases[$name->getFirst()];
 			$namespacedName = new \PHPParser_Node_Name_FullyQualified($useStmt->getName()->getParts());
 			$namespacedName->append(array_slice($name->getParts(), 1));
 			$name->setAttribute('namespacedName', $namespacedName);
 			return $name;
 		} elseif (NULL !== $this->namespace) {
 			$name = new \PHPParser_Node_Name_Relative($name->getParts());
-			if (null !== $this->namespace) {
+			if (NULL !== $this->namespace) {
 				$namespacedName = new \PHPParser_Node_Name_FullyQualified($this->namespace);
 				$namespacedName->append($name->getParts());
 				$name->setAttribute('namespacedName', $namespacedName);
@@ -166,26 +167,26 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 		// fully qualified names are already resolved and we can't do anything about unqualified
 		// ones at compiler-time
 		if ($name->isFullyQualified()) {
-			if (null !== $this->namespace) {
+			if (NULL !== $this->namespace) {
 				$name->setAttribute('namespacedName', clone $name);
 			}
 			return $name;
 		} elseif ($name->isUnqualified()) {
-			if (null !== $this->namespace && count($name->getParts()) > 1) {
+			if (NULL !== $this->namespace && count($name->getParts()) > 1) {
 				$namespacedName = clone $name;
 				$namespacedName->prepend($this->namespace);
 				$name->setAttribute('namespacedName', $namespacedName);
 			}
 			return $name;
 		}
-		// resolve aliases for qualified names
 		if ($name->isQualified() && isset($this->aliases[$name->getFirst()])) {
+			// resolve aliases for qualified names
 			$name->setFirst($this->aliases[$name->getFirst()]->getName());
+		} elseif (NULL !== $this->namespace) {
 			// prepend namespace for relative names
-		} elseif (null !== $this->namespace) {
 			$name->prepend($this->namespace);
 		}
-		$fullyQualifiedName = new \PHPParser_Node_Name_FullyQualified($name->getParts());
+		$fullyQualifiedName = new \PHPParser_Node_Name_FullyQualified($name->getParts(), $name->getIgnorables());
 		$fullyQualifiedName->setAttribute('namespacedName', clone $fullyQualifiedName);
 		return $fullyQualifiedName;
 	}
@@ -193,8 +194,31 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 	/**
 	 * @param \PHPParser_Node $node
 	 */
+	protected function resolveNamesInDocComment(\PHPParser_Node $node) {
+		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
+			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
+		});
+		foreach ($docComments as $docComment) {
+			$allowedTags = array('param', 'var', 'return');
+			$tagsValues = $docComment->getTagsValues();
+			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames */
+			foreach ($tagsValues as $tagName => &$tagValues) {
+				if (in_array(strtolower($tagName), $allowedTags)) {
+					foreach ($tagValues as &$tagValue) {
+						if ($tagValue instanceof \PHPParser_Node_Name) {
+							$tagValue = $this->resolveClassName($tagValue);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param \PHPParser_Node $node
+	 */
 	protected function addNamespacedName(\PHPParser_Node $node) {
-		if (null !== $this->namespace) {
+		if (NULL !== $this->namespace) {
 			$namespacedName = new \PHPParser_Node_Name_FullyQualified($this->namespace);
 			$namespacedName->append($node->getName());
 			$node->setAttribute('namespacedName', $namespacedName);

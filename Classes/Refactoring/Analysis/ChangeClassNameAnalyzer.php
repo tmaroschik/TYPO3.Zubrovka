@@ -1,7 +1,7 @@
 <?php
 namespace TYPO3\Zubrovka\Refactoring\Analysis;
 
-	/*                                                                        *
+/*                                                                        *
 	 * This script belongs to the FLOW3 framework.                            *
 	 *                                                                        *
 	 * It is free software; you can redistribute it and/or modify it under    *
@@ -57,8 +57,8 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	 * @param array $nodes
 	 */
 	public function beforeTraverse(array $nodes) {
-		$this->namespace = null;
-		$this->aliases   = array();
+		$this->namespace = NULL;
+		$this->aliases = array();
 		$this->objectives = array();
 	}
 
@@ -71,7 +71,7 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 			case $node instanceof \PHPParser_Node_Stmt_Namespace:
 				/** @var $node \PHPParser_Node_Stmt_Namespace */
 				$this->namespace = $node->getName();
-				$this->aliases   = array();
+				$this->aliases = array();
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_UseUse:
 				/** @var $node \PHPParser_Node_Stmt_UseUse */
@@ -92,7 +92,7 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 		switch ($node) {
 			case $node instanceof \PHPParser_Node_Stmt_Class:
 				/** @var $node \PHPParser_Node_Stmt_Class */
-				if (null !== $node->getExtends()) {
+				if (NULL !== $node->getExtends()) {
 					$this->checkRenaming($node->getExtends());
 				}
 				foreach ($node->getImplements() as $interface) {
@@ -166,7 +166,9 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	 * @param string $property
 	 */
 	protected function checkRenaming(\PHPParser_Node $node) {
-		if (NULL !== $node->getAttribute('namespacedName') && $node->getAttribute('namespacedName')->getParts() == $this->oldName->getParts()) {
+		if (NULL !== $node->getAttribute('namespacedName')
+				&& $node->getAttribute('namespacedName')->getParts() == $this->oldName->getParts()
+		) {
 			switch ($node) {
 				case $node instanceof \PHPParser_Node_Name_FullyQualified:
 					$this->objectives[] = (new Refactoring\Objective\ChangeFullyQualifiedNameObjective($node, $this->newName));
@@ -183,11 +185,13 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 				default:
 					break;
 			}
-		} elseif ($node instanceof \PHPParser_Node_Stmt_Namespace && $node->getName()->getParts() == array_slice($this->oldName->parts, 0, count($this->oldName->getParts()) - 1)) {
+		} elseif ($node instanceof \PHPParser_Node_Stmt_Namespace && $node->getName()
+				->getParts() == array_slice($this->oldName->parts, 0, count($this->oldName->getParts()) - 1)
+		) {
 			$this->objectives[] = (new Refactoring\Objective\ChangeNamespaceNameObjective($node->getName(), $this->newName));
 		} elseif ($node instanceof \PHPParser_Node_Name && $node->getParts() == $this->oldName->getParts()) {
 			$this->objectives[] = (new Refactoring\Objective\ChangeNameObjective($node, $this->newName));
-		} elseif ($node instanceof \PHPParser_Node_Stmt_Class && $node->getName() === (string) $this->oldName) {
+		} elseif ($node instanceof \PHPParser_Node_Stmt_Class && $node->getName() === (string)$this->oldName) {
 			$this->objectives[] = (new Refactoring\Objective\ChangeClassNameObjective($node, $this->newName));
 		}
 	}
@@ -196,39 +200,18 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	 * @param \PHPParser_Node $node
 	 */
 	protected function checkRenamingInDocComment(\PHPParser_Node $node) {
-		$docComments = array_filter($node->getIgnorables() ?: array(), function($ignorable) {
-			return $ignorable instanceof \PHPParser_Node_Ignorable_DocComment;
+		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
+			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
 		});
-		/** @var $docComment \PHPParser_Node_Ignorable_DocComment */
 		foreach ($docComments as $docComment) {
-			foreach (array('param', 'var') as $tagName) {
-				if ($docComment->isTaggedWith($tagName)) {
-					foreach ($docComment->getTagValues($tagName) as $tagValue) {
-						$typeAndComment = preg_split('/\s/', $tagValue, 2);
-						$type = $typeAndComment[0] ?: '';
-						if (substr($type, 0, 1) == '$') {
-							// If tag starts with variable switch type and comment, if no comment set continue
-							if (!isset($typeAndComment[1])) {
-								continue;
-							}
-							$type = $typeAndComment[1];
-						}
-						$typeParts = explode('\\', ltrim($type, '\\'));
-						if ($typeParts == $this->oldName->getParts()) {
-							// Fully Qualified or no namespace
-							if (NULL !== $this->namespace) {
-								$this->objectives[] = (new Refactoring\Objective\ChangeFullyQualifiedNameInDocCommentObjective($docComment, $tagName, $tagValue, $this->newName));
-							} else {
-								$this->objectives[] = (new Refactoring\Objective\ChangeNameInDocCommentObjective($docComment, $tagName, $tagValue, $this->newName));
-							}
-						} elseif (NULL !== $this->namespace) {
-							if (isset($this->aliases[$typeParts[0]]) && array_merge($this->aliases[$typeParts[0]]->getName()->getParts(), array_slice($typeParts, 1)) == $this->oldName->getParts()) {
-								// Relative to imported namespace
-								$this->objectives[] = (new Refactoring\Objective\ChangeRelativeNameInDocCommentObjective($docComment, $tagName, $tagValue, $this->newName, null, $this->aliases[$typeParts[0]]));
-							} elseif (array_merge($this->namespace->getParts(), $typeParts) == $this->oldName->getParts()) {
-								// Relative to current namespace
-								$this->objectives[] = (new Refactoring\Objective\ChangeRelativeNameInDocCommentObjective($docComment, $tagName, $tagValue, $this->newName, $this->namespace));
-							}
+			$allowedTags = array('param', 'var', 'return');
+			$tagsValues = $docComment->getTagsValues();
+			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames */
+			foreach ($tagsValues as $tagName => &$tagValues) {
+				if (in_array(strtolower($tagName), $allowedTags)) {
+					foreach ($tagValues as &$tagValue) {
+						if ($tagValue instanceof \PHPParser_Node_Name) {
+							$this->checkRenaming($tagValue);
 						}
 					}
 				}

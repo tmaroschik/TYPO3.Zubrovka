@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\NodeVisiting;
+namespace TYPO3\Zubrovka\Parser\NodeVisiting;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -39,13 +39,14 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 	protected $aliasesUsedBy;
 
 	public function beforeTraverse(array $nodes) {
-		$this->namespace = null;
+		$this->namespace = NULL;
 		$this->namespaceUsedBy = array();
 		$this->aliases   = array();
 		$this->aliasesUsedBy = array();
 	}
 
 	public function enterNode(\PHPParser_Node $node) {
+		$this->resolveNamespaceUsageInDocComment($node);
 		switch ($node) {
 			case $node instanceof \PHPParser_Node_Stmt_Namespace:
 				/** @var $node \PHPParser_Node_Stmt_Namespace */
@@ -63,7 +64,7 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 				break;
 			case $node instanceof \PHPParser_Node_Stmt_Class:
 				/** @var $node \PHPParser_Node_Stmt_Class */
-				if (null !== $node->getExtends()) {
+				if (NULL !== $node->getExtends()) {
 					$this->resolveNamespaceUsage($node->getExtends());
 				}
 				foreach ($node->getImplements() as $interface) {
@@ -124,7 +125,7 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 
 	public function leaveNode(\PHPParser_Node $node) {
 		if ($node instanceof \PHPParser_Node_Stmt_Namespace) {
-			if (null !== $this->namespace) {
+			if (NULL !== $this->namespace) {
 				$this->namespace->setAttribute('usedBy', $this->namespaceUsedBy);
 			}
 			/** @var $alias \PHPParser_Node_Stmt_UseUse */
@@ -147,7 +148,7 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 		}
 		// fully qualified names are already resolved
 		if ($name->isFullyQualified()) {
-			if (null !== $this->namespace) {
+			if (NULL !== $this->namespace) {
 				$this->namespaceUsedBy[] = $name;
 				$name->setAttribute('namespace', $this->namespace);
 			}
@@ -174,13 +175,13 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 		// fully qualified names are already resolved and we can't do anything about unqualified
 		// ones at compiler-time
 		if ($name->isFullyQualified()) {
-			if (null !== $this->namespace) {
+			if (NULL !== $this->namespace) {
 				$this->namespaceUsedBy[] = $name;
 				$name->setAttribute('namespace', $this->namespace);
 			}
 			return;
 		} elseif ($name->isUnqualified()) {
-			if (null !== $this->namespace && count($name->getParts()) > 1) {
+			if (NULL !== $this->namespace && count($name->getParts()) > 1) {
 				$this->namespaceUsedBy[] = $name;
 				$name->setAttribute('namespace', $this->namespace);
 			}
@@ -191,7 +192,7 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 			$this->namespaceUsedBy[] = $name;
 			$name->setAttribute('namespace', $this->namespace);
 			return;
-		} elseif (null !== $this->namespace) {
+		} elseif (NULL !== $this->namespace) {
 			$this->namespaceUsedBy[] = $name;
 			$name->setAttribute('namespace', $this->namespace);
 			return;
@@ -201,8 +202,31 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 	/**
 	 * @param \PHPParser_Node $node
 	 */
+	protected function resolveNamespaceUsageInDocComment(\PHPParser_Node $node) {
+		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
+			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
+		});
+		foreach ($docComments as $docComment) {
+			$allowedTags = array('param', 'var', 'return');
+			$tagsValues = $docComment->getTagsValues();
+			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames */
+			foreach ($tagsValues as $tagName => &$tagValues) {
+				if (in_array(strtolower($tagName), $allowedTags)) {
+					foreach ($tagValues as &$tagValue) {
+						if ($tagValue instanceof \PHPParser_Node_Name) {
+							$this->resolveNamespaceUsage($tagValue);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param \PHPParser_Node $node
+	 */
 	protected function addNamespaceUsage(\PHPParser_Node $node) {
-		if (null !== $this->namespace) {
+		if (NULL !== $this->namespace) {
 			$this->namespaceUsedBy[] = $node;
 			$node->setAttribute('namespace', $this->namespace);
 		}

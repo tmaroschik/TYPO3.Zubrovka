@@ -28,21 +28,21 @@
  */
 namespace Test\Model;
 
-use Foo\Buh as Baz;
+use Foo as Baz;
 /**
  * some comment
  */
 class SimpleNamepaceWithUseTest {
 
 	/**
-	 * @param Baz
+	 * @param Baz\Buh
 	 */
-	public function bar(Baz $buh) {
+	public function bar(Baz\Buh $buh) {
 
 	}
 
 	protected function guh() {
-		$buh = new Baz();
+		$buh = new Baz\Buh();
 		$gaga = new GaGa();
 	}
 

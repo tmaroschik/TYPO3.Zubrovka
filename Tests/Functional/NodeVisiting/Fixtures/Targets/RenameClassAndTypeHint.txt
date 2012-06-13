@@ -25,7 +25,7 @@ class ClassMethodWithManyParameter {
 	 * @return string
 	 */
 	private static function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, ClassMethodWithManyParameter $n) {
-		/** @var $n ClassMethodWithManyParameter */
+		/** @var ClassMethodWithManyParameter $n */
 		if ($number > 3) {
 			return 'bar';
 		} else {

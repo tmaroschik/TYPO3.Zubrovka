@@ -35,9 +35,6 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 	public function canSatisfyObjectives() {
 		// TODO pay attention to the right namespace as multiple namespace and class declarations can occur in the same file
 		list($objectivesByNamespace, $namespaces, $mandatoryNamespaceChangeObjectives) = $this->getObjectivesByNamespace();
-		if (empty($objectivesByNamespace)) {
-			return 0;
-		}
 		$nodesToBeChanged = $this->getNodesToBeChanged($this->objectives);
 		foreach ($mandatoryNamespaceChangeObjectives as $mandatoryNamespaceChange) {
 			/** @var $mandatoryNamespaceChange \TYPO3\Zubrovka\Refactoring\Objective\ChangeNamespaceNameObjective */
@@ -60,9 +57,11 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 			);
 		}
 		$commonTargetNamespaces = $this->getCommonTargetNamespaces($this->objectives);
+		$changeRelativeNames = array();
 		foreach ($objectivesByNamespace as $objectives) {
 			foreach ($objectives as $objective) {
 				$existingNamespaceParts = $this->getMatchingNamespaceParts($objective, $newSharedNamespaces);
+				$existingNamespaceString = '\\' . implode('\\', $existingNamespaceParts);
 				if (empty($existingNamespaceParts)) {
 					// There is no suitable namespace
 					$commonNamespaceParts = $this->getMatchingNamespaceParts($objective, $commonTargetNamespaces);
@@ -72,9 +71,11 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 						if (!isset($newSharedNamespaces[$commonNamespaceString])) {
 							$newSharedNamespaces[$commonNamespaceString] = 'alias';
 						}
-						$this->operations[] = $this->operationFactory->create(
-							'\TYPO3\Zubrovka\Refactoring\Operation\ChangeNameOperation',
-							$objective->getNode(), array_slice($objective->getNewName()->getParts(), count($commonNamespaceParts))
+						$relativeNameParts = array_slice($objective->getNewName()->getParts(), count($commonNamespaceParts));
+						$changeRelativeNames[] = array(
+							'namespace' => $commonNamespaceString,
+							'node' => $objective->getNode(),
+							'relativeNameParts' => $relativeNameParts
 						);
 					} else {
 						$this->operations[] = $this->operationFactory->create(
@@ -84,9 +85,11 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 					}
 				} else {
 					// Assign to other namespace
-					$this->operations[] = $this->operationFactory->create(
-						'\TYPO3\Zubrovka\Refactoring\Operation\ChangeNameOperation',
-						$objective->getNode(), array_slice($objective->getNewName()->getParts(), count($existingNamespaceParts))
+					$relativeNameParts = array_slice($objective->getNewName()->getParts(), count($existingNamespaceParts));
+					$changeRelativeNames[] = array(
+						'namespace' => $existingNamespaceString,
+						'node' => $objective->getNode(),
+						'relativeNameParts' => $relativeNameParts
 					);
 				}
 			}
@@ -101,15 +104,41 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 			}
 		}
 		$newNamespaces = array_keys(array_filter($newSharedNamespaces, function($value) {
+			return $value == 'namespace';
+		}));
+		foreach ($newNamespaces as $newNamespace) {
+			foreach ($changeRelativeNames as $crnKey => $relativeNameChange) {
+				if ($relativeNameChange['namespace'] == $newNamespace) {
+					$this->operations[] = $this->operationFactory->create(
+						'\TYPO3\Zubrovka\Refactoring\Operation\ChangeNameOperation',
+						$relativeNameChange['node'], $relativeNameChange['relativeNameParts']
+					);
+					unset($changeRelativeNames[$crnKey]);
+				}
+			}
+		}
+		// TODO eliminate duplication and extract to some methods
+		$newNamespaces = array_keys(array_filter($newSharedNamespaces, function($value) {
 			return $value == 'alias';
 		}));
 		// Change all availabe use stmts
 		foreach ($changeableUseStmts as $key => $changeableUseStmt) {
 			if (isset($newNamespaces[$key])) {
+				$alias = $changeableUseStmt->getAlias();
 				$this->operations[] = $this->operationFactory->create(
 					'\TYPO3\Zubrovka\Refactoring\Operation\ChangeUseStatementOperation',
-					$changeableUseStmt, explode('\\', ltrim($newNamespaces[$key], '\\'))
+					$changeableUseStmt, explode('\\', ltrim($newNamespaces[$key], '\\')), $alias
 				);
+				foreach ($changeRelativeNames as $crnKey => $relativeNameChange) {
+					if ($relativeNameChange['namespace'] == $newNamespaces[$key]) {
+						array_unshift($relativeNameChange['relativeNameParts'], $alias);
+						$this->operations[] = $this->operationFactory->create(
+							'\TYPO3\Zubrovka\Refactoring\Operation\ChangeNameOperation',
+							$relativeNameChange['node'], $relativeNameChange['relativeNameParts']
+						);
+						unset($changeRelativeNames[$crnKey]);
+					}
+				}
 				unset($newNamespaces[$key]);
 				unset($changeableUseStmts[$key]);
 			}
@@ -140,7 +169,7 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 	 * @return array
 	 */
 	protected  function getMatchingNamespaceParts($objective, $targetNamespaces) {
-		$namespaceParts     = array_slice($objective->getNewName()->getParts(), 0, -1);
+		$namespaceParts = array_slice($objective->getNewName()->getParts(), 0, -1);
 		$potentialNamespace = '\\' . implode('\\', $namespaceParts);
 		while (!isset($targetNamespaces[$potentialNamespace])) {
 			$namespaceParts = array_slice($namespaceParts, 0, -1);

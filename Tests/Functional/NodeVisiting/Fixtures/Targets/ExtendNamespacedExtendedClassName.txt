@@ -1,5 +1,5 @@
 <?php
-namespace Test\Model;
+namespace Test\Model\Model2;
 
 /*                                                                        *
  * This script belongs to the FLOW3 package "Zubrovka".                   *
@@ -13,7 +13,7 @@ namespace Test\Model;
 /**
  * Simple namespace test fixture
  */
-class SimpleNamepaceTest extends SimpleNamespaceExtendedClass {
+class SimpleNamepaceTest extends \Test\Model\SimpleNamespaceExtendedClass {
 
 
 }

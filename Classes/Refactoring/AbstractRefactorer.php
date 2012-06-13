@@ -116,8 +116,9 @@ abstract class AbstractRefactorer implements RefactorerInterface  {
 	 */
 	protected function analyze() {
 		$traverser = new \PHPParser_NodeTraverser;
-		$traverser->appendVisitor(new \TYPO3\Zubrovka\NodeVisiting\NameResolver);
-		$traverser->appendVisitor (new \TYPO3\Zubrovka\NodeVisiting\NamespaceResolver);
+		$traverser->appendVisitor(new \TYPO3\Zubrovka\Parser\NodeVisiting\DocCommentNameResolver);
+		$traverser->appendVisitor(new \TYPO3\Zubrovka\Parser\NodeVisiting\NameResolver);
+		$traverser->appendVisitor (new \TYPO3\Zubrovka\Parser\NodeVisiting\NamespaceResolver);
 		foreach ($this->missions as $mission) {
 			$traverser->appendVisitor($mission->getAnalyzer());
 		}
