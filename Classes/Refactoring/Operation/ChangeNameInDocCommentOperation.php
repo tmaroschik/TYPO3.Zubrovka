@@ -54,7 +54,7 @@ class ChangeNameInDocCommentOperation extends AbstractOperation {
 	/**
 	 * @return bool
 	 */
-	public function execute() {
+	public function execute(array &$stmts) {
 		$tagsValues =& $this->node->getTagsValues();
 		foreach ($tagsValues[$this->tagName] as &$tagValue) {
 			if ($tagValue == $this->tagValue) {

@@ -31,13 +31,13 @@ class TransactionBuilder {
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeClassNameTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeFullyQualifiedNameInDocCommentTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNameTask',
+			'\TYPO3\Zubrovka\Refactoring\Task\ChangeClassNameToNamespacedClassNameTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNamespaceNameTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNameInDocCommentTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNamespaceAndClassNameTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameInDocCommentTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\NameLeavesImportedNamespaceTask',
-
-
+			'\TYPO3\Zubrovka\Refactoring\Task\IntroduceNamespaceTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingImportedNamespaceTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameStayingInImportedNamespaceTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingNamespaceTask',
@@ -86,7 +86,9 @@ class TransactionBuilder {
 		$transaction = new Transaction();
 		foreach ($objectives as $objective) {
 			/** @var $objective Objective\ObjectiveInterface */
-			$transaction->addOperations($objective->getTask()->getOperations());
+			if (NULL !== $objective->getTask()) {
+				$transaction->addOperations($objective->getTask()->getOperations());
+			}
 		}
 		return $transaction;
 	}
@@ -110,9 +112,10 @@ class TransactionBuilder {
 				foreach ($satisfactionGraphPart['objectiveCombination'] as $objective) {
 					/** @var $objective \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface */
 					$objective->setTask($satisfactionGraphPart['task']);
-					$removeableObjectives = array_keys($unsatisfiedObjectives, $objective);
-					foreach ($removeableObjectives as $removeableObjectiveKey) {
-						unset($unsatisfiedObjectives[$removeableObjectiveKey]);
+					foreach ($unsatisfiedObjectives as $removeableObjectiveKey => $unsatisfiedObjective) {
+						if ($objective === $unsatisfiedObjective) {
+							unset($unsatisfiedObjectives[$removeableObjectiveKey]);
+						}
 					}
 				}
 			}
@@ -157,10 +160,10 @@ class TransactionBuilder {
 						'task'  => $localTask,
 						'objectiveCombination'  => $objectiveCombination
 					);
-				}
-				if ($localTask instanceof Task\SubObjectiveTaskInterface) {
-					/** @var $localTask Task\SubObjectiveTaskInterface */
-					$subObjectives = array_merge($subObjectives, $localTask->getSubObjectives());
+					if ($localTask instanceof Task\SubObjectiveTaskInterface) {
+						/** @var $localTask Task\SubObjectiveTaskInterface */
+						$subObjectives = array_merge($subObjectives, $localTask->getSubObjectives());
+					}
 				}
 			}
 		}

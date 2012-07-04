@@ -16,7 +16,7 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeClassNameTask extends AbstractSubObjectiveTask {
+class ChangeClassNameTask extends AbstractTask {
 
 	/**
 	 * Contains a list of objective types that could be satisfied
@@ -41,7 +41,7 @@ class ChangeClassNameTask extends AbstractSubObjectiveTask {
 		$newName = $objective->getNewName();
 		/** @var $namespacedName \PHPParser_Node_Name_FullyQualified */
 		$namespacedName = $classNode->getAttribute('namespacedName');
-		if (NULL === $namespacedName) {
+		if (NULL === $namespacedName && !$newName->isFullyQualified()) {
 			$this->operations = array(
 				$this->operationFactory->create(
 					'\TYPO3\Zubrovka\Refactoring\Operation\ChangeClassNameOperation',

@@ -54,7 +54,7 @@ class IntroduceUseStatementOperation extends AbstractOperation {
 	/**
 	 * @return bool
 	 */
-	public function execute() {
+	public function execute(array &$stmts) {
 		$name = new \PHPParser_Node_Name($this->name);
 		$newUse = new \PHPParser_Node_Stmt_UseUse($name, $this->alias);
 		$this->node->appendUse($newUse);

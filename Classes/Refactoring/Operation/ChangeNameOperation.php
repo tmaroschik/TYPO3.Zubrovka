@@ -44,7 +44,7 @@ class ChangeNameOperation extends AbstractOperation {
 	/**
 	 * @return bool
 	 */
-	public function execute() {
+	public function execute(array &$stmts) {
 		$this->node->setParts($this->parts);
 		return true;
 	}

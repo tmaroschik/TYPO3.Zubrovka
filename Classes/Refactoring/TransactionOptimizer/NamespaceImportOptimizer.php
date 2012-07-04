@@ -13,7 +13,7 @@ namespace TYPO3\Zubrovka\Refactoring\TransactionOptimizer;
 
 class NamespaceImportOptimizer implements PreCommitOptimizerInterface {
 
-	public function optimize(\TYPO3\Zubrovka\Refactoring\Transaction $transaction) {
+	public function optimize(\TYPO3\Zubrovka\Refactoring\Transaction $transaction, array &$stmts) {
 //		$importOperations = $transaction->getOperationsByType('TYPO3\Zubrovka\Refactoring\Operation\IntroduceUseStatementOperation');
 //		var_dump($importOperations);die();
 	}

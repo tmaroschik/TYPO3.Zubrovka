@@ -16,7 +16,8 @@ interface TransactionOptimizerInterface {
 	/**
 	 * @abstract
 	 * @param \TYPO3\Zubrovka\Refactoring\Transaction $transaction
+	 * @param array $stmts
 	 */
-	public function optimize(\TYPO3\Zubrovka\Refactoring\Transaction $transaction);
+	public function optimize(\TYPO3\Zubrovka\Refactoring\Transaction $transaction, array &$stmts);
 
 }

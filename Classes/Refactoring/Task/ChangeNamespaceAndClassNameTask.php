@@ -48,8 +48,6 @@ class ChangeNamespaceAndClassNameTask extends AbstractTask {
 		if (NULL === $classNameObjective || NULL === $namespaceObjective) {
 			return 0;
 		}
-		var_dump($classNameObjective, $namespaceObjective);
-		die();
 //		$classNode = $objective->getNode();
 //		$newName = $objective->getNewName();
 //		/** @var $namespacedName \PHPParser_Node_Name_FullyQualified */

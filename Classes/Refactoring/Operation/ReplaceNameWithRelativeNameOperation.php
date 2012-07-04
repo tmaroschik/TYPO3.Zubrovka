@@ -16,7 +16,7 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ReplaceNameWithFullyQualifiedNameOperation extends AbstractOperation {
+class ReplaceNameWithRelativeNameOperation extends AbstractOperation {
 
 	/**
 	 * Contains the class name node
@@ -28,16 +28,16 @@ class ReplaceNameWithFullyQualifiedNameOperation extends AbstractOperation {
 	/**
 	 * Contains the new relative name
 	 *
-	 * @var \PHPParser_Node_Name_FullyQualified
+	 * @var \PHPParser_Node_Name_Relative
 	 */
-	protected $fullyQualifiedName;
+	protected $relativeName;
 
 	/**
 	 * @param \PHPParser_Node_Name $node
-	 * @param \PHPParser_Node_Name_FullyQualified $fullyQualifiedName
+	 * @param \PHPParser_Node_Name_Relative $relativeName
 	 */
-	function __construct(\PHPParser_Node_Name $node, \PHPParser_Node_Name_FullyQualified $fullyQualifiedName) {
-		$this->fullyQualifiedName = $fullyQualifiedName;
+	function __construct(\PHPParser_Node_Name $node, \PHPParser_Node_Name_Relative $relativeName) {
+		$this->relativeName = $relativeName;
 		parent::__construct($node);
 	}
 
@@ -49,13 +49,13 @@ class ReplaceNameWithFullyQualifiedNameOperation extends AbstractOperation {
 		$parentSubNodeName = ucfirst($this->node->getParentSubNodeName());
 		$singularName = substr($parentSubNodeName, -1) == 's' ? substr($parentSubNodeName, 0,  -1) : null;
 		if (is_callable(array($parent, 'replace' . $parentSubNodeName))) {
-			$parent->{'replace' . $parentSubNodeName}($this->fullyQualifiedName);
+			$parent->{'replace' . $parentSubNodeName}($this->relativeName);
 		} elseif (NULL !== $singularName && is_callable(array($parent, 'replace' . $singularName))) {
-			$parent->{'replace' . $singularName}($this->fullyQualifiedName, $this->node);
+			$parent->{'replace' . $singularName}($this->relativeName, $this->node);
 		} else {
-			$parent->{'set' . $parentSubNodeName}($this->fullyQualifiedName, $this->node);
+			$parent->{'set' . $parentSubNodeName}($this->relativeName, $this->node);
 		}
-		return true;
+		return TRUE;
 	}
 
 

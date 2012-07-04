@@ -41,7 +41,7 @@ class ChangeNameTask extends AbstractSubObjectiveTask {
 		$namespace = $name->getAttribute('namespace');
 		$alias = $name->getAttribute('alias');
 		$newName = $objective->getNewName();
-		if (NULL === $namespace && count($name->getParts()) === 1 && count($newName->getParts()) === 1) {
+		if (NULL === $namespace && $name->isUnqualified() && $newName->isUnqualified()) {
 			$this->operations = array(
 				$this->operationFactory->create(
 					'\TYPO3\Zubrovka\Refactoring\Operation\ChangeNameOperation',

@@ -131,20 +131,21 @@ class Transaction {
 	}
 
 	/**
-	 *
+	 * @return array
 	 */
-	public function commit() {
+	public function commit(array $stmts) {
 		foreach ($this->preCommitOptimizers as $optimizer) {
-			$optimizer->optimize($this);
+			$optimizer->optimize($this, $stmts);
 		}
 		foreach ($this->operations as $operation) {
-			if (!$operation->execute()) {
+			if (!$operation->execute($stmts)) {
 				// TODO throw exceptions
 			}
 		}
 		foreach ($this->postCommitOptimizers as $optimizer) {
-			$optimizer->optimize($this);
+			$optimizer->optimize($this, $stmts);
 		}
+		return $stmts;
 	}
 
 

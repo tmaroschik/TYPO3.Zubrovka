@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Operation;
+namespace TYPO3\Zubrovka\Refactoring\Objective;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,48 +16,40 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeUseStatementOperation extends AbstractOperation {
+class IntroduceNamespaceObjective extends AbstractObjective {
 
 	/**
-	 * Contains the use statement node
-	 *
-	 * @var \PHPParser_Node_Stmt_UseUse
+	 * @var \PHPParser_Node_Stmt_Class[]
 	 */
-	protected $node;
+	protected $classNodes;
 
 	/**
-	 * Contains the new use statement name
-	 *
 	 * @var array
 	 */
-	protected $name;
+	protected $newName;
 
 	/**
-	 * Contains the new use statement alias
-	 *
-	 * @var string
+	 * @param array $newName
+	 * @param \PHPParser_Node_Stmt_Class[] $classNodes
 	 */
-	protected $alias;
-
-	/**
-	 * @param \PHPParser_Node_Stmt_UseUse $node
-	 * @param array $name
-	 * @param null|string $alias
-	 */
-	function __construct(\PHPParser_Node_Stmt_UseUse $node, array $name, $alias = null) {
-		$this->name = $name;
-		$this->alias = $alias;
-		parent::__construct($node);
+	public function __construct(array $newName, array $classNodes = array()) {
+		$this->newName = $newName;
+		$this->classNodes = $classNodes;
+		parent::__construct(current($classNodes));
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getNewName() {
+		return $this->newName;
+	}
 
 	/**
-	 * @return bool
+	 * @return \PHPParser_Node_Stmt_Class[]
 	 */
-	public function execute(array &$stmts) {
-		$this->node->getName()->set($this->name);
-		$this->node->setAlias($this->alias);
-		return true;
+	public function getClassNodes() {
+		return $this->classNodes;
 	}
 
 }

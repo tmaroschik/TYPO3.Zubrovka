@@ -54,7 +54,7 @@ class DocCommentContainingNames extends \PHPParser_Node_Ignorable_DocComment {
 					} else {
 						$description = array();
 					}
-					$this->tags[$tag][] = new \PHPParser_Node_Name($name, -1, $description);
+					$this->tags[$tag][] = $this->setSelfAsSubNodeParent(new \PHPParser_Node_Name($name, -1, $description), 'tags');
 					break;
 				default:
 					$this->tags[$tag][] = trim($tagAndValue[1], ' "');
@@ -102,6 +102,28 @@ class DocCommentContainingNames extends \PHPParser_Node_Ignorable_DocComment {
 			$docComment = preg_replace('/\s+$/', '', $docComment);
 			$docComment = preg_replace('/^/', ' * ', $docComment);
 			return '/**' . PHP_EOL . implode(PHP_EOL, $docComment) . PHP_EOL . ' */';
+		}
+	}
+
+
+	/**
+	 * @param \PHPParser_Node_Name $argNew
+	 * @param \PHPParser_Node_Name $argOld
+	 */
+	public function replaceTag(\PHPParser_Node_Name $tagNew, \PHPParser_Node_Name $tagOld) {
+		if (NULL !== $this->tags) {
+			foreach ($this->tags as $key => $existingTags) {
+				if (is_array($existingTags)) {
+					foreach ($existingTags as $tagKey => $existingTag) {
+						if ($tagOld === $existingTag) {
+							$this->tags[$key][$tagKey] = $tagNew;
+							$existingTag->setParent();
+							$this->setSelfAsSubNodeParent($tagNew, 'tags');
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
 

@@ -52,7 +52,7 @@ class RemoveUseStatementOperation extends AbstractOperation {
 	/**
 	 * @return bool
 	 */
-	public function execute() {
+	public function execute(array &$stmts) {
 		$parent = $this->node->getParent();
 		$parent->removeUse($this->node);
 		return true;

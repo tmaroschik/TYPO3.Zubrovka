@@ -44,7 +44,7 @@ class ChangeFullyQualifiedNameOperation extends AbstractOperation {
 	/**
 	 * @return bool
 	 */
-	public function execute() {
+	public function execute(array &$stmts) {
 		$this->node->set($this->name);
 		return true;
 	}

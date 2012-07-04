@@ -174,6 +174,63 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function introduceNamespace() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_ClassMethodWithManyParameter', '\Tx\PhpParser\Test\ClassMethodWithManyParameter'));
+		$codeRefactorer->load($this->getSource('ClassMethodWithManyParameter'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('IntroduceNamespace'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
+	public function introduceNamespaceToMultipleClasses() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_MultipleClasses', '\Tx\PhpParser\Test\MultipleClasses'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_MultipleClasses2', '\Tx\PhpParser\Test\MultipleClasses2'));
+		$codeRefactorer->load($this->getSource('MultipleClasses'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('IntroduceNamespaceToMultipleClasses'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
+	public function introduceMultipleNamespacesToMultipleClasses() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_MultipleClasses', '\Tx\PhpParser\Test\MultipleClasses'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_MultipleClasses2', '\Tx\PhpParser\Test2\MultipleClasses2'));
+		$codeRefactorer->load($this->getSource('MultipleClasses'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('IntroduceMultipleNamespacesToMultipleClasses'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
+	public function introduceNamespaceToOneOfMultipleClasses() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_MultipleClasses2', '\Tx\PhpParser\Test\SecondClass'));
+		$codeRefactorer->load($this->getSource('MultipleClasses'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('IntroduceMultipleNamespacesToMultipleClasses'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
+	public function introduceNamespaceAndReplaceRelativeNames() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_ClassMethodWithManyParameterAndOtherClassUsage', '\Tx\PhpParser\Test\ClassMethodWithManyParameterAndOtherClassUsage'));
+		$codeRefactorer->load($this->getSource('ClassMethodWithManyParameterAndOtherClassUsage'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('IntroduceNamespaceAndReplaceRelativeNames'), $codeRefactorer->save());
+	}
+
+	/**
 	 * @param string $name
 	 * @return string
 	 */

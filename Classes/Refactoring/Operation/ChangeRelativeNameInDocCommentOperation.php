@@ -54,7 +54,7 @@ class ChangeRelativeNameInDocCommentOperation extends AbstractOperation {
 	/**
 	 * @return bool
 	 */
-	public function execute() {
+	public function execute(array &$stmts) {
 		if ($this->node->isTaggedWith($this->tagName)) {
 			$tagsValues =& $this->node->getTagsValues();
 			foreach ($tagsValues[$this->tagName] as &$tagValue) {

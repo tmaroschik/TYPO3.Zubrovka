@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Analysis;
+namespace TYPO3\Zubrovka\Refactoring\Task\IntroduceNamespaceTask;
 
 /*                                                                        *
 	 * This script belongs to the FLOW3 framework.                            *
@@ -17,70 +17,30 @@ use TYPO3\Zubrovka\Refactoring;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements \TYPO3\Zubrovka\Refactoring\Analysis\AnalyzerInterface {
+class ConvertClassNameToFullyQualifiedNodeVisitor extends \PHPParser_NodeVisitorAbstract {
 
 	/**
-	 * @var null|\PHPParser_Node_Name Current namespace
+	 * @var \PHPParser_Node[]
 	 */
-	protected $namespace;
+	protected $alreadyChangedNodes;
 
 	/**
-	 * @var array Currently defined namespace and class aliases
+	 * @var \PHPParser_Node[]
 	 */
-	protected $aliases;
+	protected $nodesToBeChanged;
 
 	/**
-	 * @var \PHPParser_Node_Name
+	 * @param \PHPParser_Node[] $alreadyChangedNodes
 	 */
-	protected $oldName;
-
-	/**
-	 * @var \PHPParser_Node_Name
-	 */
-	protected $newName;
-
-	/**
-	 * @var \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface[]
-	 */
-	protected $objectives;
-
-	/**
-	 * @param string $oldName
-	 * @param string $newName
-	 */
-	public function __construct($oldName, $newName) {
-		$this->oldName = strpos($oldName, '\\') !== FALSE ? new \PHPParser_Node_Name_FullyQualified($oldName) : new \PHPParser_Node_Name($oldName);
-		$this->newName = strpos($newName, '\\') !== FALSE ? new \PHPParser_Node_Name_FullyQualified($newName) : new \PHPParser_Node_Name($newName);
+	public function __construct(array $alreadyChangedNodes = array()) {
+		$this->alreadyChangedNodes = $alreadyChangedNodes;
 	}
 
 	/**
 	 * @param array $nodes
 	 */
 	public function beforeTraverse(array $nodes) {
-		$this->namespace = NULL;
-		$this->aliases = array();
-		$this->objectives = array();
-	}
-
-	/**
-	 * @param \PHPParser_Node $node
-	 * @throws \PHPParser_Error
-	 */
-	public function enterNode(\PHPParser_Node $node) {
-		switch ($node) {
-			case $node instanceof \PHPParser_Node_Stmt_Namespace:
-				/** @var $node \PHPParser_Node_Stmt_Namespace */
-				$this->namespace = $node->getName();
-				$this->aliases = array();
-				break;
-			case $node instanceof \PHPParser_Node_Stmt_UseUse:
-				/** @var $node \PHPParser_Node_Stmt_UseUse */
-				if (isset($this->aliases[$node->getAlias()])) {
-					throw new \PHPParser_Error(sprintf('Cannot use "%s" as "%s" because the name is already in use', $node->getName(), $node->getAlias()), $node->getLine());
-				}
-				$this->aliases[$node->getAlias()] = $node;
-				break;
-		}
+		$this->nodesToBeChanged = array();
 	}
 
 	/**
@@ -155,44 +115,21 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	}
 
 	/**
-	 * @param array $nodes
-	 */
-	public function afterTraverse(array $nodes) {
-
-	}
-
-	/**
 	 * @param \PHPParser_Node $node
 	 * @param string $property
 	 */
 	protected function checkRenaming(\PHPParser_Node $node) {
-		if (NULL !== $node->getAttribute('namespacedName')
-				&& $node->getAttribute('namespacedName')->getParts() == $this->oldName->getParts()
-		) {
-			switch ($node) {
-				case $node instanceof \PHPParser_Node_Name_FullyQualified:
-					$this->objectives[] = (new Refactoring\Objective\ChangeFullyQualifiedNameObjective($node, $this->newName));
-					break;
-				case $node instanceof \PHPParser_Node_Name_Relative:
-					$this->objectives[] = (new Refactoring\Objective\ChangeRelativeNameObjective($node, $this->newName));
-					break;
-				case $node instanceof \PHPParser_Node_Name:
-					$this->objectives[] = (new Refactoring\Objective\ChangeNameObjective($node, $this->newName));
-					break;
-				case $node instanceof \PHPParser_Node_Stmt_Class:
-					$this->objectives[] = (new Refactoring\Objective\ChangeClassNameObjective($node, $this->newName));
-					break;
-				default:
-					break;
-			}
-		} elseif ($node instanceof \PHPParser_Node_Stmt_Namespace && $node->getName()
-				->getParts() == array_slice($this->oldName->parts, 0, count($this->oldName->getParts()) - 1)
-		) {
-			$this->objectives[] = (new Refactoring\Objective\ChangeNamespaceNameObjective($node->getName(), $this->newName));
-		} elseif ($node instanceof \PHPParser_Node_Name && $node->getParts() == $this->oldName->getParts()) {
-			$this->objectives[] = (new Refactoring\Objective\ChangeNameObjective($node, $this->newName));
-		} elseif ($node instanceof \PHPParser_Node_Stmt_Class && $node->getName() === (string)$this->oldName) {
-			$this->objectives[] = (new Refactoring\Objective\ChangeClassNameObjective($node, $this->newName));
+		if (in_array($node, $this->alreadyChangedNodes, true)) {
+			return;
+		}
+		switch ($node) {
+			case $node instanceof \PHPParser_Node_Name_FullyQualified:
+			case $node instanceof \PHPParser_Node_Name_Relative:
+			case $node instanceof \PHPParser_Node_Name:
+				if (!$this->isScalar((string) $node)) {
+					$this->nodesToBeChanged[] = $node;
+				}
+				break;
 		}
 	}
 
@@ -200,6 +137,9 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	 * @param \PHPParser_Node $node
 	 */
 	protected function checkRenamingInDocComment(\PHPParser_Node $node) {
+		if (in_array($node, $this->alreadyChangedNodes, true)) {
+			return;
+		}
 		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
 			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
 		});
@@ -220,9 +160,36 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	}
 
 	/**
-	 * @return \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface[]
+	 * Normalize data types so they match the PHP type names:
+	 *  int -> integer
+	 *  double -> float
+	 *  bool -> boolean
+	 *
+	 * @param string $type Data type to unify
+	 * @return string unified data type
 	 */
-	public function getObjectives() {
-		return $this->objectives;
+	protected function isScalar($type) {
+		$scalarPattern = '/^(?:integer|int|float|double|boolean|bool|string|array)$/';
+		$type = strtolower($type);
+		switch ($type) {
+			case 'int':
+				$type = 'integer';
+				break;
+			case 'bool':
+				$type = 'boolean';
+				break;
+			case 'double':
+				$type = 'float';
+				break;
+		}
+		return preg_match($scalarPattern, $type) === 1;
 	}
+
+	/**
+	 * @return \PHPParser_Node[]
+	 */
+	public function getNodesToBeChanged() {
+		return $this->nodesToBeChanged;
+	}
+
 }

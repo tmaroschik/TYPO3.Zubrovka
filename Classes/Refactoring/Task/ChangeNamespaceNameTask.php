@@ -16,7 +16,7 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeNamespaceNameTask extends AbstractSubObjectiveTask {
+class ChangeNamespaceNameTask extends AbstractTask {
 
 	/**
 	 * Contains a list of objective types that could be satisfied

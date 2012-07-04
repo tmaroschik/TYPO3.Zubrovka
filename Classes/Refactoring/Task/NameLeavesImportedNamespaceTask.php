@@ -40,13 +40,14 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 			/** @var $mandatoryNamespaceChange \TYPO3\Zubrovka\Refactoring\Objective\ChangeNamespaceNameObjective */
 			$nodesNotLeavingNamespace = $this->getNodesNotLeavingNamespace($mandatoryNamespaceChange->getNode(), $nodesToBeChanged);
 			if (!empty($nodesNotLeavingNamespace)) {
+				$this->subObjectives[] = clone $mandatoryNamespaceChange;
 				foreach ($nodesNotLeavingNamespace as $nodeNotLeavingNamespace) {
 					$this->subObjectives[] = new Objective\NameLeavesImportedNamespaceObjective($nodeNotLeavingNamespace, $nodeNotLeavingNamespace->getAttribute('namespacedName'));
 				}
 			}
 		}
 		if (!empty($this->subObjectives)) {
-			return 0;
+			return -50;
 		}
 		$newSharedNamespaces = array();
 		foreach ($mandatoryNamespaceChangeObjectives as $mandatoryNamespaceChange) {

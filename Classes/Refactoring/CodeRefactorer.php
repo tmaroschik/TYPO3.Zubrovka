@@ -54,7 +54,7 @@ class CodeRefactorer extends AbstractRefactorer {
 		$objectives = $this->analyze();
 		$transaction = $this->transactionBuilder->build($objectives);
 		$transaction->addOptimizer(new \TYPO3\Zubrovka\Refactoring\TransactionOptimizer\NamespaceImportOptimizer);
-		$transaction->commit();
+		$this->stmts = $transaction->commit($this->stmts);
 	}
 
 }
