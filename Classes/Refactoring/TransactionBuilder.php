@@ -37,6 +37,7 @@ class TransactionBuilder {
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNamespaceAndClassNameTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameInDocCommentTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\NameLeavesImportedNamespaceTask',
+			'\TYPO3\Zubrovka\Refactoring\Task\RemoveNamespaceTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\IntroduceNamespaceTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingImportedNamespaceTask',
 			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameStayingInImportedNamespaceTask',

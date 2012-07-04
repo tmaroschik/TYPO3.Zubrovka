@@ -231,6 +231,17 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function removeSimpleNamespace() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Test\Model\SimpleNamepaceTest', 'Test_Model_SimpleNamespaceTest'));
+		$codeRefactorer->load($this->getSource('SimpleNamespace'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RemoveSimpleNamespace'), $codeRefactorer->save());
+	}
+
+	/**
 	 * @param string $name
 	 * @return string
 	 */

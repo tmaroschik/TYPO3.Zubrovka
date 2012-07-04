@@ -43,6 +43,7 @@ class ChangeNamespacedClassNameTask extends AbstractSubObjectiveTask {
 		$namespacedName = $classNode->getAttribute('namespacedName');
 		$namespace = $classNode->getAttribute('namespace');
 		if (NULL !== $namespacedName && NULL !== $namespace) {
+			$newNamespace = array_slice($newName->getParts(), 0, -1);
 			if ($namespacedName->getLast() != $newName->getLast()) {
 				$this->operations = array(
 					$this->operationFactory->create(
@@ -51,7 +52,12 @@ class ChangeNamespacedClassNameTask extends AbstractSubObjectiveTask {
 					)
 				);
 			}
-			if (array_slice($namespacedName->getParts(), 0, -1) != array_slice($newName->getParts(), 0, -1)) {
+			if (empty($newNamespace)) {
+				$this->subObjectives = array(
+					new \TYPO3\Zubrovka\Refactoring\Objective\RemoveNamespaceObjective($namespace, array($classNode))
+				);
+				return -50;
+			} elseif (array_slice($namespacedName->getParts(), 0, -1) != array_slice($newName->getParts(), 0, -1)) {
 				$this->subObjectives = array(
 					new \TYPO3\Zubrovka\Refactoring\Objective\ChangeNamespaceNameObjective($namespace, array_slice($newName->getParts(), 0, -1), array($classNode))
 				);
