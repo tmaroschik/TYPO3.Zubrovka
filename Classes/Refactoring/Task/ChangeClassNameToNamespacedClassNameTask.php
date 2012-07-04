@@ -59,7 +59,10 @@ class ChangeClassNameToNamespacedClassNameTask extends AbstractSubObjectiveTask 
 	protected function getObjectivesByTargetNamespace() {
 		$objectivesByTargetNamespace = array();
 		foreach ($this->objectives as $objective) {
-			if ($objective instanceof \TYPO3\Zubrovka\Refactoring\Objective\ChangeClassNameObjective && $objective->getNewName()->isFullyQualified()) {
+			if ($objective instanceof \TYPO3\Zubrovka\Refactoring\Objective\ChangeClassNameObjective
+				&& NULL === $objective->getNode()->getAttribute('namespace')
+				&& $objective->getNewName()->isFullyQualified()
+			) {
 				$newName = implode('\\', array_slice($objective->getNewName()->getParts(), 0, -1));
 				if (!isset($objectivesByTargetNamespace[$newName])) {
 					$objectivesByTargetNamespace[$newName] = array();

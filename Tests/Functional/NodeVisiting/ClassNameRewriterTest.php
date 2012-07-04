@@ -216,7 +216,7 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_MultipleClasses2', '\Tx\PhpParser\Test\SecondClass'));
 		$codeRefactorer->load($this->getSource('MultipleClasses'));
 		$codeRefactorer->refactor();
-		$this->assertEquals($this->getTarget('IntroduceMultipleNamespacesToMultipleClasses'), $codeRefactorer->save());
+		$this->assertEquals($this->getTarget('IntroduceNamespaceToOneOfMultipleClasses'), $codeRefactorer->save());
 	}
 
 	/**
