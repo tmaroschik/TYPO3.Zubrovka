@@ -245,6 +245,7 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	 * @test
 	 */
 	public function removeNs() {
+		$this->markTestIncomplete('Just a testing test.');
 		$codeRefactorer = new Refactoring\CodeRefactorer();
 		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\OneToOne', '\TYPO3\FLOW3\Annotations\SomeOther'));
 		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\ManyToOne', '\TYPO3\FLOW3\Annotations\SomeOther'));

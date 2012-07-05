@@ -157,7 +157,6 @@ class DocCommentContainingTags extends \PHPParser_Node_Ignorable_DocComment {
 		if ('\\' == substr($name, 0, 1)) {
 			return new \PHPParser_Node_Name_FullyQualified($name);
 		} elseif (isset($this->aliases[$alias])) {
-			var_dump($name);
 			return new \PHPParser_Node_Name($name);
 		} elseif (!\TYPO3\Zubrovka\Utility\TypeHandling::isBuiltin($name)) {
 			return new \PHPParser_Node_Name($name);
