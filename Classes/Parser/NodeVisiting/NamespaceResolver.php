@@ -120,6 +120,14 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 					$this->resolveNamespaceUsage($node->getType());
 				}
 				break;
+			case $node instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentTag:
+				if ($node->getName() instanceof \PHPParser_Node_Name) {
+					$this->resolveNamespaceUsage($node->getName());
+				}
+				if ($node->getType() instanceof \PHPParser_Node_Name) {
+					$this->resolveNamespaceUsage($node->getType());
+				}
+				break;
 		}
 	}
 
@@ -143,7 +151,7 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 	 */
 	protected function resolveNamespaceUsage(\PHPParser_Node_Name $name) {
 		// don't resolve special class names
-		if (in_array((string)$name, array('self', 'parent', 'static'))) {
+		if (in_array((string)$name, array('self', 'parent', 'static')) || \TYPO3\Zubrovka\Utility\TypeHandling::isBuiltin((string) $name)) {
 			return;
 		}
 		// fully qualified names are already resolved
@@ -204,12 +212,12 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 	 */
 	protected function resolveNamespaceUsageInDocComment(\PHPParser_Node $node) {
 		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
-			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
+			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags;
 		});
 		foreach ($docComments as $docComment) {
 			$allowedTags = array('param', 'var', 'return');
 			$tagsValues = $docComment->getTagsValues();
-			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames */
+			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags */
 			foreach ($tagsValues as $tagName => &$tagValues) {
 				if (in_array(strtolower($tagName), $allowedTags)) {
 					foreach ($tagValues as &$tagValue) {
@@ -231,4 +239,5 @@ class NamespaceResolver extends \PHPParser_NodeVisitorAbstract {
 			$node->setAttribute('namespace', $this->namespace);
 		}
 	}
+
 }

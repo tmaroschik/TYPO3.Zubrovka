@@ -242,6 +242,20 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function removeNs() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\OneToOne', '\TYPO3\FLOW3\Annotations\SomeOther'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\ManyToOne', '\TYPO3\FLOW3\Annotations\SomeOther'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\ManyToMany', '\TYPO3\FLOW3\Annotations\SomeOther'));
+		$person = file_get_contents('/Users/tmaroschik/Sites/Zubrovka/Packages/Framework/TYPO3.Party/Classes/Domain/Model/Person.php');
+		$codeRefactorer->load($person);
+		$codeRefactorer->refactor();
+		$this->assertEquals($person, $codeRefactorer->save());
+	}
+
+	/**
 	 * @param string $name
 	 * @return string
 	 */

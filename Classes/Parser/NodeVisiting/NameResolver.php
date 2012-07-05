@@ -119,6 +119,14 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 					$node->setType($this->resolveClassName($node->getType()));
 				}
 				break;
+			case $node instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentTag:
+				if ($node->getName() instanceof \PHPParser_Node_Name) {
+					$node->setName($this->resolveClassName($node->getName()));
+				}
+				if ($node->getType() instanceof \PHPParser_Node_Name) {
+					$node->setType($this->resolveClassName($node->getType()));
+				}
+				break;
 		}
 	}
 
@@ -128,7 +136,8 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 	 */
 	protected function resolveClassName(\PHPParser_Node_Name $name) {
 		// don't resolve special class names
-		if (in_array((string)$name, array('self', 'parent', 'static'))) {
+		$nameAsString = (string) $name;
+		if (in_array($nameAsString, array('self', 'parent', 'static')) || \TYPO3\Zubrovka\Utility\TypeHandling::isBuiltin($nameAsString)) {
 			return $name;
 		}
 		// fully qualified names are already resolved
@@ -196,12 +205,12 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 	 */
 	protected function resolveNamesInDocComment(\PHPParser_Node $node) {
 		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
-			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
+			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags;
 		});
 		foreach ($docComments as $docComment) {
 			$allowedTags = array('param', 'var', 'return');
 			$tagsValues = $docComment->getTagsValues();
-			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames */
+			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags */
 			foreach ($tagsValues as $tagName => &$tagValues) {
 				if (in_array(strtolower($tagName), $allowedTags)) {
 					foreach ($tagValues as &$tagValue) {
@@ -224,4 +233,5 @@ class NameResolver extends \PHPParser_NodeVisitorAbstract {
 			$node->setAttribute('namespacedName', $namespacedName);
 		}
 	}
+
 }

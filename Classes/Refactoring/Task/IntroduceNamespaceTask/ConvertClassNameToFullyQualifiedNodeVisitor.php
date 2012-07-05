@@ -119,14 +119,14 @@ class ConvertClassNameToFullyQualifiedNodeVisitor extends \PHPParser_NodeVisitor
 	 * @param string $property
 	 */
 	protected function checkRenaming(\PHPParser_Node $node) {
-		if (in_array($node, $this->alreadyChangedNodes, true)) {
+		if (in_array($node, $this->alreadyChangedNodes, TRUE)) {
 			return;
 		}
 		switch ($node) {
 			case $node instanceof \PHPParser_Node_Name_FullyQualified:
 			case $node instanceof \PHPParser_Node_Name_Relative:
 			case $node instanceof \PHPParser_Node_Name:
-				if (!$this->isScalar((string) $node)) {
+				if (!\TYPO3\Zubrovka\Utility\TypeHandling::isBuiltin((string) $node)) {
 					$this->nodesToBeChanged[] = $node;
 				}
 				break;
@@ -137,16 +137,16 @@ class ConvertClassNameToFullyQualifiedNodeVisitor extends \PHPParser_NodeVisitor
 	 * @param \PHPParser_Node $node
 	 */
 	protected function checkRenamingInDocComment(\PHPParser_Node $node) {
-		if (in_array($node, $this->alreadyChangedNodes, true)) {
+		if (in_array($node, $this->alreadyChangedNodes, TRUE)) {
 			return;
 		}
 		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
-			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
+			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags;
 		});
 		foreach ($docComments as $docComment) {
 			$allowedTags = array('param', 'var', 'return');
 			$tagsValues = $docComment->getTagsValues();
-			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames */
+			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags */
 			foreach ($tagsValues as $tagName => &$tagValues) {
 				if (in_array(strtolower($tagName), $allowedTags)) {
 					foreach ($tagValues as &$tagValue) {
@@ -157,32 +157,6 @@ class ConvertClassNameToFullyQualifiedNodeVisitor extends \PHPParser_NodeVisitor
 				}
 			}
 		}
-	}
-
-	/**
-	 * Normalize data types so they match the PHP type names:
-	 *  int -> integer
-	 *  double -> float
-	 *  bool -> boolean
-	 *
-	 * @param string $type Data type to unify
-	 * @return string unified data type
-	 */
-	protected function isScalar($type) {
-		$scalarPattern = '/^(?:integer|int|float|double|boolean|bool|string|array)$/';
-		$type = strtolower($type);
-		switch ($type) {
-			case 'int':
-				$type = 'integer';
-				break;
-			case 'bool':
-				$type = 'boolean';
-				break;
-			case 'double':
-				$type = 'float';
-				break;
-		}
-		return preg_match($scalarPattern, $type) === 1;
 	}
 
 	/**

@@ -19,21 +19,40 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 class DocCommentNameResolver extends \PHPParser_NodeVisitorAbstract {
 
 	/**
+	 * @var null|\PHPParser_Node_Stmt_Namespace Current namespace
+	 */
+	protected $namespace;
+
+	/**
+	 * @var array Currently defined namespace and class aliases
+	 */
+	protected $aliases;
+
+	public function beforeTraverse(array $nodes) {
+		$this->namespace = NULL;
+		$this->aliases   = array();
+	}
+	/**
 	 * @param \PHPParser_Node $node
 	 * @throws \PHPParser_Error
 	 */
 	public function enterNode(\PHPParser_Node $node) {
-		$ignorables = $node->getIgnorables();
-		if (!empty($ignorables)) {
-			$docComments = array_filter($ignorables, function($value) {
-				return $value instanceof \PHPParser_Node_Ignorable_DocComment;
-			});
-			if (!empty($docComments)) {
-				foreach ($docComments as $key => $docComment) {
-					$ignorables[$key] = new \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames($docComment->getValue(), $docComment->getLine());
+		switch ($node) {
+			case $node instanceof \PHPParser_Node_Stmt_Namespace:
+				/** @var $node \PHPParser_Node_Stmt_Namespace */
+				$this->namespace = $node;
+				$this->aliases   = array();
+				break;
+			case $node instanceof \PHPParser_Node_Stmt_UseUse:
+				/** @var $node \PHPParser_Node_Stmt_UseUse */
+				if (isset($this->aliases[$node->getAlias()])) {
+					throw new \PHPParser_Error(sprintf('Cannot use "%s" as "%s" because the name is already in use', $node->getName(), $node->getAlias()), $node->getLine());
 				}
-				$node->setIgnorables($ignorables);
-			}
+				$this->aliases[$node->getAlias()] = $node;
+				break;
+			case $node instanceof \PHPParser_Node_Ignorable_DocComment:
+				return new \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags($node->getValue(), $node->getLine(), $this->namespace, $this->aliases);
+				break;
 		}
 	}
 

@@ -42,7 +42,10 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 			if (!empty($nodesNotLeavingNamespace)) {
 				$this->subObjectives[] = clone $mandatoryNamespaceChange;
 				foreach ($nodesNotLeavingNamespace as $nodeNotLeavingNamespace) {
-					$this->subObjectives[] = new Objective\NameLeavesImportedNamespaceObjective($nodeNotLeavingNamespace, $nodeNotLeavingNamespace->getAttribute('namespacedName'));
+					$namespacedName = $nodeNotLeavingNamespace->getAttribute('namespacedName');
+					if (NULL !== $namespacedName) {
+						$this->subObjectives[] = new Objective\NameLeavesImportedNamespaceObjective($nodeNotLeavingNamespace, $nodeNotLeavingNamespace->getAttribute('namespacedName'));
+					}
 				}
 			}
 		}
@@ -257,7 +260,7 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 		$nodesUsingNamespace = $namespaceNode->getAttribute('usedBy');
 		if (NULL !== $nodesUsingNamespace) {
 			$nodesUsingNamespaceAfterNamespaceChange = array_filter($nodesUsingNamespace, function($nodeUsingNamespace) use($namespaceNode, $nodesToBeChanged) {
-				return !in_array($nodeUsingNamespace, $nodesToBeChanged);
+				return !in_array($nodeUsingNamespace, $nodesToBeChanged, TRUE);
 			});
 			if (!empty($nodesUsingNamespaceAfterNamespaceChange)) {
 				return $nodesUsingNamespaceAfterNamespaceChange;

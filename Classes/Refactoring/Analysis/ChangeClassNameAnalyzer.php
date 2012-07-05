@@ -151,6 +151,15 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 					$this->checkRenaming($node->getType());
 				}
 				break;
+			case $node instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentTag:
+				if ($node->getName() instanceof \PHPParser_Node_Name) {
+						xdebug_break();
+						$this->checkRenaming($node->getName());
+					}
+				if ($node->getType() instanceof \PHPParser_Node_Name) {
+					$this->checkRenaming($node->getType());
+				}
+				break;
 		}
 	}
 
@@ -201,12 +210,12 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	 */
 	protected function checkRenamingInDocComment(\PHPParser_Node $node) {
 		$docComments = array_filter($node->getIgnorables(), function($ignorable) {
-			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames;
+			return $ignorable instanceof \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags;
 		});
 		foreach ($docComments as $docComment) {
 			$allowedTags = array('param', 'var', 'return');
 			$tagsValues = $docComment->getTagsValues();
-			/** @var $docComment \TYPO3\Zubrovka\Parser\Node\DocCommentContainingNames */
+			/** @var \TYPO3\Zubrovka\Parser\Node\DocCommentContainingTags $docComment */
 			foreach ($tagsValues as $tagName => &$tagValues) {
 				if (in_array(strtolower($tagName), $allowedTags)) {
 					foreach ($tagValues as &$tagValue) {

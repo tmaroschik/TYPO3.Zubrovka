@@ -23,15 +23,15 @@ class ClassMethodWithManyParameterAndOtherClassUsage {
 	 * @param array $arr
 	 * @param boolean $boolean
 	 * @param float $float
-	 * @param \Tx_PhpParser_Test_ClassMethodWithManyParameter $n
+	 * @param Tx_PhpParser_Test_ClassMethodWithManyParameter $n
 	 * @return string
 	 */
-	private static function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, \Tx_PhpParser_Test_ClassMethodWithManyParameter $n) {
-		/** @var \Tx_PhpParser_Test_ClassMethodWithManyParameter $n */
+	static private function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, \Tx_PhpParser_Test_ClassMethodWithManyParameter $n) {
+		/** @var $n Tx_PhpParser_Test_ClassMethodWithManyParameter */
 		if ($number > 3) {
 			return 'bar';
 		} else {
-			/** @var \Tx_PhpParser_Test_ClassMethodWithManyParameter $n */
+			/** @var Tx_PhpParser_Test_ClassMethodWithManyParameter $n */
 			return 'foo';
 		}
 		$f = new \Tx_PhpParser_Test_ClassMethodWithManyParameter();
