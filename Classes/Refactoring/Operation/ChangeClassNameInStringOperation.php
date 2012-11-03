@@ -16,46 +16,43 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class RemoveNamespaceOperation extends AbstractOperation {
+class ChangeClassNameInStringOperation extends AbstractOperation {
 
 	/**
-	 * @var \PHPParser_Node_Stmt[]
-	 */
-	protected $classNodes;
-
-	/**
-	 * Contains the namespace
+	 * Contains the class name node
 	 *
-	 * @var \PHPParser_Node_Stmt_Namespace
+	 * @var \PHPParser_Node_Scalar_String
 	 */
-	protected $namespace;
+	protected $node;
 
 	/**
-	 * @param \PHPParser_Node_Stmt_Namespace $namespace
-	 * @param \PHPParser_Node_Stmt[] $classNodes
+	 * @var string
 	 */
-	function __construct(\PHPParser_Node_Stmt_Namespace $namespace, array $classNodes = array()) {
-		$this->namespace = $namespace;
-		$this->classNodes = $classNodes;
-		parent::__construct(current($classNodes));
-	}
+	protected $oldName;
 
+	/**
+	 * @var string
+	 */
+	protected $newName;
+
+	/**
+	 * @param \PHPParser_Node_Scalar_String $node
+	 * @param string $oldName
+	 * @param string $newName
+	 */
+	public function __construct(\PHPParser_Node_Scalar_String $node, $oldName, $newName) {
+		$this->oldName = (string) $oldName;
+		$this->newName = (string) $newName;
+		parent::__construct($node);
+	}
 
 	/**
 	 * @return bool
 	 */
 	public function execute(array &$stmts) {
-		/** @var $firstClassNode \PHPParser_Node_Stmt */
-		$firstClassNode = current($this->classNodes);
-		$classIgnorables = $this->namespace->getIgnorables() + $firstClassNode->getIgnorables();
-		$firstClassNode->setIgnorables($classIgnorables);
-		foreach ($stmts as $key => $stmt) {
-			if ($stmt === $this->namespace) {
-				array_splice($stmts, $key, 1, $this->classNodes);
-				break;
-			}
-		}
-		return true;
+		$this->node->setValue(str_replace($this->oldName, $this->newName, $this->node->getValue()));
+		return TRUE;
 	}
+
 
 }

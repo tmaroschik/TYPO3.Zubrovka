@@ -21,16 +21,17 @@ class CodeRefactorer extends AbstractRefactorer {
 	/**
 	 * Contains prettyPrinter
 	 *
-	 * @var \PHPParser_PrettyPrinter_TYPO3CGL
+	 * @var \TYPO3\Zubrovka\PrettyPrinter\TYPO3CGLPrettyPrinter
 	 */
 	protected $prettyPrinter;
 
 	/**
-	 * Constructor method for a refactorer
+	 * Injector method for a \TYPO3\Zubrovka\PrettyPrinter\TYPO3CGLPrettyPrinter
+	 *
+	 * @param \TYPO3\Zubrovka\PrettyPrinter\TYPO3CGLPrettyPrinter
 	 */
-	function __construct() {
-		$this->prettyPrinter = new \PHPParser_PrettyPrinter_TYPO3CGL;
-		parent::__construct();
+	public function injectPrettyPrinter(\TYPO3\Zubrovka\PrettyPrinter\TYPO3CGLPrettyPrinter $prettyPrinter) {
+		$this->prettyPrinter = $prettyPrinter;
 	}
 
 	/**
@@ -44,7 +45,7 @@ class CodeRefactorer extends AbstractRefactorer {
 	 * @return string
 	 */
 	public function save() {
-		return '<?php' . PHP_EOL . $this->prettyPrinter->prettyPrint($this->stmts);
+		return '<?php' . PHP_EOL . $this->prettyPrinter->prettyPrint($this->stmts) . PHP_EOL . '?>';
 	}
 
 	/**

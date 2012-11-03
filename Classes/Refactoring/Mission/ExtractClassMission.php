@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Objective;
+namespace TYPO3\Zubrovka\Refactoring\Mission;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,29 +16,41 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeClassNameObjective extends AbstractObjective {
+class ExtractClassMission extends AbstractMission  {
 
 	/**
-	 * Contains newName
-	 *
-	 * @var \PHPParser_Node_Name
+	 * @var string
 	 */
-	protected $newName;
+	protected $className;
 
 	/**
-	 * @param \PHPParser_Node_Stmt $classNode
-	 * @param \PHPParser_Node_Name $newName
+	 * @var string
 	 */
-	public function __construct(\PHPParser_Node_Stmt $classNode, $newName) {
-		$this->newName = $newName;
-		parent::__construct($classNode);
+	protected $targetClassFile;
+
+	/**
+	 * @param string $oldName
+	 * @param string $newName
+	 */
+	function __construct($className, $targetClassFile) {
+		$this->className = $className;
+		$this->targetClassFile = $targetClassFile;
+		$this->analyzer = new \TYPO3\Zubrovka\Refactoring\Analysis\ExtractClassAnalyzer($className, $targetClassFile);
 	}
 
 	/**
-	 * @return \PHPParser_Node_Name
+	 * @return string
 	 */
-	public function getNewName() {
-		return $this->newName;
+	public function getClassName() {
+		return $this->className;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getTargetClassFile() {
+		return $this->targetClassFile;
+	}
+
 
 }

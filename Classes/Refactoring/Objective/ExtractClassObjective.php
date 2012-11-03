@@ -16,29 +16,28 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeClassNameObjective extends AbstractObjective {
+class ExtractClassObjective extends AbstractObjective {
 
 	/**
-	 * Contains newName
-	 *
-	 * @var \PHPParser_Node_Name
+	 * @var string
 	 */
-	protected $newName;
+	protected $targetClassFile;
 
 	/**
-	 * @param \PHPParser_Node_Stmt $classNode
-	 * @param \PHPParser_Node_Name $newName
+	 * @param \PHPParser_Node_Stmt $node
+	 * @param $oldName
+	 * @param $newName
 	 */
-	public function __construct(\PHPParser_Node_Stmt $classNode, $newName) {
-		$this->newName = $newName;
-		parent::__construct($classNode);
+	public function __construct(\PHPParser_Node_Stmt $node, $targetClassFile) {
+		$this->targetClassFile = $targetClassFile;
+		parent::__construct($node);
 	}
 
 	/**
-	 * @return \PHPParser_Node_Name
+	 * @return string
 	 */
-	public function getNewName() {
-		return $this->newName;
+	public function getTargetClassFile() {
+		return $this->targetClassFile;
 	}
 
 }

@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Objective;
+namespace TYPO3\Zubrovka\Scanning;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -14,31 +14,41 @@ namespace TYPO3\Zubrovka\Refactoring\Objective;
 use TYPO3\FLOW3\Annotations as FLOW3;
 
 /**
- * @FLOW3\Scope("prototype")
+ * @FLOW3\Scope("singleton")
  */
-class ChangeClassNameObjective extends AbstractObjective {
+abstract class AbstractScanner implements ScannerInterface  {
 
 	/**
-	 * Contains newName
+	 * Contains parser
 	 *
-	 * @var \PHPParser_Node_Name
+	 * @var \PHPParser_Parser
 	 */
-	protected $newName;
+	protected $parser;
 
 	/**
-	 * @param \PHPParser_Node_Stmt $classNode
-	 * @param \PHPParser_Node_Name $newName
+	 * Contains traverser
+	 *
+	 * @var \PHPParser_NodeTraverser
 	 */
-	public function __construct(\PHPParser_Node_Stmt $classNode, $newName) {
-		$this->newName = $newName;
-		parent::__construct($classNode);
+	protected $traverser;
+
+	/**
+	 * Constructor method for a refactorer
+	 */
+	function __construct() {
+		$this->parser = new \PHPParser_Parser;
+		$this->traverser = new \PHPParser_NodeTraverser;
 	}
 
 	/**
-	 * @return \PHPParser_Node_Name
+	 * @param Analysis\AnalyzerInterface $analyzer
 	 */
-	public function getNewName() {
-		return $this->newName;
+	public function addAnalyzer(\TYPO3\Zubrovka\Scanning\Analysis\AnalyzerInterface $analyzer) {
+		$this->traverser->appendVisitor($analyzer);
+	}
+
+	protected function parse($filename) {
+		return $this->parser->parse(new \PHPParser_Lexer(file_get_contents($filename)));
 	}
 
 }

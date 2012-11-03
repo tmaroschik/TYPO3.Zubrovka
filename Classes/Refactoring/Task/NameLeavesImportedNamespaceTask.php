@@ -75,7 +75,8 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 						if (!isset($newSharedNamespaces[$commonNamespaceString])) {
 							$newSharedNamespaces[$commonNamespaceString] = 'alias';
 						}
-						$relativeNameParts = array_slice($objective->getNewName()->getParts(), count($commonNamespaceParts));
+						$relativeNameParts = array_slice($objective->getNewName()
+								->getParts(), count($commonNamespaceParts));
 						$changeRelativeNames[] = array(
 							'namespace' => $commonNamespaceString,
 							'node' => $objective->getNode(),
@@ -89,7 +90,8 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 					}
 				} else {
 					// Assign to other namespace
-					$relativeNameParts = array_slice($objective->getNewName()->getParts(), count($existingNamespaceParts));
+					$relativeNameParts = array_slice($objective->getNewName()
+							->getParts(), count($existingNamespaceParts));
 					$changeRelativeNames[] = array(
 						'namespace' => $existingNamespaceString,
 						'node' => $objective->getNode(),
@@ -172,7 +174,7 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 	 * @param array $targetNamespaces
 	 * @return array
 	 */
-	protected  function getMatchingNamespaceParts($objective, $targetNamespaces) {
+	protected function getMatchingNamespaceParts($objective, $targetNamespaces) {
 		$namespaceParts = array_slice($objective->getNewName()->getParts(), 0, -1);
 		$potentialNamespace = '\\' . implode('\\', $namespaceParts);
 		while (!isset($targetNamespaces[$potentialNamespace])) {
@@ -194,9 +196,10 @@ class NameLeavesImportedNamespaceTask extends AbstractSubObjectiveTask {
 		$mandatoryNamespaceChangeObjectives = array();
 		foreach ($this->objectives as $objective) {
 			if ($objective instanceof Objective\NameLeavesImportedNamespaceObjective) {
-				$namespaceNode = $objective->getNode()->getAttribute('alias') ? : $objective->getNode()->getAttribute('namespace');
+				$namespaceNode = $objective->getNode()->getAttribute('alias') ? : $objective->getNode()
+						->getAttribute('namespace');
 				if (NULL !== $namespaceNode) {
-					$namespace = (string) $namespaceNode->getName();
+					$namespace = (string)$namespaceNode->getName();
 					if (!isset($namespaces[$namespace])) {
 						$namespaces[$namespace] = $namespaceNode;
 					}

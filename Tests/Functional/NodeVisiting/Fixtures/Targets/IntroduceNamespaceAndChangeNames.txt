@@ -13,32 +13,28 @@ namespace Tx\PhpParser\Test;
 /**
  * @author Nico de Haen
  */
-class ClassMethodWithManyParameter {
+class ClassMethodWithManyParameterAndOtherClassUsage {
 
 	/**
-	 * This is the description,
-	 * with a second line
+	 * This is the description
 	 *
 	 * @param int $number
 	 * @param string $string
 	 * @param array $arr
 	 * @param boolean $boolean
 	 * @param float $float
-	 * @param ClassMethodWithManyParameter $n
-	 * @return ClassMethodWithManyParameter
+	 * @param \Tx\PhpParser\Test2\ClassMethodWithManyParameter $n
+	 * @return string
 	 */
-	static private function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, ClassMethodWithManyParameter $n) {
-		/** @var $n ClassMethodWithManyParameter */
+	static private function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, \Tx\PhpParser\Test2\ClassMethodWithManyParameter $n) {
+		/** @var $n \Tx\PhpParser\Test2\ClassMethodWithManyParameter */
 		if ($number > 3) {
 			return 'bar';
 		} else {
-			/** @var ClassMethodWithManyParameter $n */
-			$n = array(
-				// Let's deal with comments in arrays
-				'Tx_PhpParser_Test_ClassMethodWithManyParameter' => parent::testMethod()
-			);
-			return $n;
+			/** @var \Tx\PhpParser\Test2\ClassMethodWithManyParameter $n */
+			return 'foo';
 		}
+		$f = \Tx\PhpParser\Static\ClassCall::init();
 	}
 
 }

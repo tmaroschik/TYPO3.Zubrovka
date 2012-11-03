@@ -44,6 +44,7 @@ class IntroduceNamespaceTask extends AbstractTask {
 		}
 		$namespacesByClassName = $this->getNamespacesByClassName($introduceNamespaceObjectives);
 		$alreadyChangedNodes = array();
+		xdebug_break();
 		foreach ($this->getChangeNameObjectivesByClassName() as $className => $changeNameObjectives) {
 			foreach ($changeNameObjectives as $changeNameObjective) {
 				/** @var $changeNameObjective \TYPO3\Zubrovka\Refactoring\Objective\ChangeNameObjective */
@@ -114,7 +115,7 @@ class IntroduceNamespaceTask extends AbstractTask {
 		foreach ($this->objectives as $objective) {
 			if ($objective instanceof \TYPO3\Zubrovka\Refactoring\Objective\ChangeNameObjective) {
 				$currentNode = $objective->getNode();
-				while(!$currentNode instanceof \PHPParser_Node_Stmt_Class) {
+				while(!$currentNode instanceof \PHPParser_Node_Stmt_Class && !$currentNode instanceof \PHPParser_Node_Stmt_Interface) {
 					$currentNode = $currentNode->getParent();
 					if (NULL === $currentNode) {
 						break;

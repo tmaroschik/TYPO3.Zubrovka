@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Objective;
+namespace TYPO3\Zubrovka\Scanning\Analysis;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -11,34 +11,12 @@ namespace TYPO3\Zubrovka\Refactoring\Objective;
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-use TYPO3\FLOW3\Annotations as FLOW3;
-
-/**
- * @FLOW3\Scope("prototype")
- */
-class ChangeClassNameObjective extends AbstractObjective {
+interface AnalyzerInterface {
 
 	/**
-	 * Contains newName
-	 *
-	 * @var \PHPParser_Node_Name
+	 * @abstract
+	 * @return array
 	 */
-	protected $newName;
-
-	/**
-	 * @param \PHPParser_Node_Stmt $classNode
-	 * @param \PHPParser_Node_Name $newName
-	 */
-	public function __construct(\PHPParser_Node_Stmt $classNode, $newName) {
-		$this->newName = $newName;
-		parent::__construct($classNode);
-	}
-
-	/**
-	 * @return \PHPParser_Node_Name
-	 */
-	public function getNewName() {
-		return $this->newName;
-	}
+	public function getResults();
 
 }

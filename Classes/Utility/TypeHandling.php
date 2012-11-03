@@ -22,7 +22,7 @@ class TypeHandling {
 	 * @return string unified data type
 	 */
 	static public function isBuiltin($type) {
-		$scalarPattern = '/^(?:integer|int|float|double|boolean|bool|string|array|object|void)$/';
+		$scalarPattern = '/^(?:integer|int|float|double|boolean|bool|string|array|object|void|parent|static|self)$/';
 		$type = strtolower($type);
 		switch ($type) {
 			case 'int':

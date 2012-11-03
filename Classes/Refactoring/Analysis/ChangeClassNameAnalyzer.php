@@ -40,6 +40,11 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	protected $newName;
 
 	/**
+	 * @var bool
+	 */
+	protected $rewriteClassNameInStrings;
+
+	/**
 	 * @var \TYPO3\Zubrovka\Refactoring\Objective\ObjectiveInterface[]
 	 */
 	protected $objectives;
@@ -48,9 +53,10 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 	 * @param string $oldName
 	 * @param string $newName
 	 */
-	public function __construct($oldName, $newName) {
+	public function __construct($oldName, $newName, $rewriteClassNameInStrings = FALSE) {
 		$this->oldName = strpos($oldName, '\\') !== FALSE ? new \PHPParser_Node_Name_FullyQualified($oldName) : new \PHPParser_Node_Name($oldName);
 		$this->newName = strpos($newName, '\\') !== FALSE ? new \PHPParser_Node_Name_FullyQualified($newName) : new \PHPParser_Node_Name($newName);
+		$this->rewriteClassNameInStrings = (bool) $rewriteClassNameInStrings;
 	}
 
 	/**
@@ -160,6 +166,11 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 					$this->checkRenaming($node->getType());
 				}
 				break;
+			case $node instanceof \PHPParser_Node_Scalar_String:
+				if ($this->rewriteClassNameInStrings) {
+					$this->checkRenamingInString($node);
+				}
+				break;
 		}
 	}
 
@@ -194,13 +205,12 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 				default:
 					break;
 			}
-		} elseif ($node instanceof \PHPParser_Node_Stmt_Namespace && $node->getName()
-				->getParts() == array_slice($this->oldName->parts, 0, count($this->oldName->getParts()) - 1)
+		} elseif ($node instanceof \PHPParser_Node_Stmt_Namespace && $node->getName()->getParts() == array_slice($this->oldName->parts, 0, count($this->oldName->getParts()) - 1)
 		) {
 			$this->objectives[] = (new Refactoring\Objective\ChangeNamespaceNameObjective($node->getName(), $this->newName));
 		} elseif ($node instanceof \PHPParser_Node_Name && $node->getParts() == $this->oldName->getParts()) {
 			$this->objectives[] = (new Refactoring\Objective\ChangeNameObjective($node, $this->newName));
-		} elseif ($node instanceof \PHPParser_Node_Stmt_Class && $node->getName() === (string)$this->oldName) {
+		} elseif (($node instanceof \PHPParser_Node_Stmt_Class || $node instanceof \PHPParser_Node_Stmt_Interface) && $node->getName() === (string)$this->oldName) {
 			$this->objectives[] = (new Refactoring\Objective\ChangeClassNameObjective($node, $this->newName));
 		}
 	}
@@ -225,6 +235,17 @@ class ChangeClassNameAnalyzer extends \PHPParser_NodeVisitorAbstract implements 
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * @param \PHPParser_Node $node
+	 */
+	protected function checkRenamingInString(\PHPParser_Node_Scalar_String $node) {
+		$oldName = ltrim((string) $this->oldName, '\\');
+		if (strpos($node->getValue(), $oldName)  !== FALSE) {
+			$newName = ltrim((string) $this->newName, '\\');
+			$this->objectives[] = (new Refactoring\Objective\ChangeClassNameInStringObjective($node, $oldName, $newName));
 		}
 	}
 

@@ -19,7 +19,7 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 class IntroduceNamespaceOperation extends AbstractOperation {
 
 	/**
-	 * @var \PHPParser_Node_Stmt_Class[]
+	 * @var \PHPParser_Node_Stmt[]
 	 */
 	protected $classNodes;
 
@@ -32,7 +32,7 @@ class IntroduceNamespaceOperation extends AbstractOperation {
 
 	/**
 	 * @param array $name
-	 * @param \PHPParser_Node_Stmt_Class[] $classNodes
+	 * @param \PHPParser_Node_Stmt[] $classNodes
 	 */
 	function __construct(array $name, array $classNodes = array()) {
 		$this->name = $name;
@@ -45,26 +45,11 @@ class IntroduceNamespaceOperation extends AbstractOperation {
 	 * @return bool
 	 */
 	public function execute(array &$stmts) {
-		$namespaceIgnorables = array();
-		$classIgnorables = array();
-		$beforeDocComment = true;
-		/** @var $firstClassNode \PHPParser_Node_Stmt_Class */
-		$firstClassNode = current($this->classNodes);
-		foreach ($firstClassNode->getIgnorables() as $ignorable) {
-			if ($beforeDocComment && !$ignorable instanceof \PHPParser_Node_Ignorable_DocComment) {
-				$namespaceIgnorables[] = $ignorable;
-			} else {
-				$classIgnorables[] = $ignorable;
-				$beforeDocComment = false;
-			}
-		}
-		$firstClassNode->setIgnorables($classIgnorables);
 		foreach ($stmts as $key => $stmt) {
 			if (in_array($stmt, $this->classNodes, true)) {
-				unset($stmts[$key]);
+				$stmts[$key] = new \PHPParser_Node_Stmt_Namespace(new \PHPParser_Node_Name($this->name), array($stmt), -1);
 			}
 		}
-		$stmts[] = new \PHPParser_Node_Stmt_Namespace(new \PHPParser_Node_Name($this->name), $this->classNodes, -1, $namespaceIgnorables);
 		return true;
 	}
 

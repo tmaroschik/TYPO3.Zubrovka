@@ -18,4 +18,20 @@ use TYPO3\FLOW3\Annotations as FLOW3;
  */
 class ChangeFullyQualifiedNameObjective extends AbstractObjective {
 
+	/**
+	 * @param \PHPParser_Node_Name_FullyQualified $node
+	 * @param \PHPParser_Node_Name $newName
+	 */
+	public function __construct(\PHPParser_Node_Name_FullyQualified $node, \PHPParser_Node_Name $newName) {
+		$this->newName = $newName;
+		parent::__construct($node);
+	}
+
+	/**
+	 * @return \PHPParser_Node_Name
+	 */
+	public function getNewName() {
+		return $this->newName;
+	}
+
 }

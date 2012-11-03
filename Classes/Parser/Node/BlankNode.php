@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\Zubrovka\Refactoring\Objective;
+namespace TYPO3\Zubrovka\Parser\Node;
 
 /*                                                                        *
  * This script belongs to the FLOW3 framework.                            *
@@ -16,29 +16,15 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 /**
  * @FLOW3\Scope("prototype")
  */
-class ChangeClassNameObjective extends AbstractObjective {
-
+class BlankNode extends \PHPParser_Node_Stmt {
+	
 	/**
-	 * Contains newName
+	 * Gets the type of the node.
 	 *
-	 * @var \PHPParser_Node_Name
+	 * @return string Type of the node
 	 */
-	protected $newName;
-
-	/**
-	 * @param \PHPParser_Node_Stmt $classNode
-	 * @param \PHPParser_Node_Name $newName
-	 */
-	public function __construct(\PHPParser_Node_Stmt $classNode, $newName) {
-		$this->newName = $newName;
-		parent::__construct($classNode);
-	}
-
-	/**
-	 * @return \PHPParser_Node_Name
-	 */
-	public function getNewName() {
-		return $this->newName;
+	public function getNodeType() {
+		return 'BlankNode';
 	}
 
 }

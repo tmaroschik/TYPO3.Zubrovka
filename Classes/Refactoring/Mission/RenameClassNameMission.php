@@ -29,13 +29,19 @@ class RenameClassNameMission extends AbstractMission  {
 	protected $newName;
 
 	/**
+	 * @var bool
+	 */
+	protected $rewriteClassNameInStrings;
+
+	/**
 	 * @param string $oldName
 	 * @param string $newName
 	 */
-	function __construct($oldName, $newName) {
+	function __construct($oldName, $newName, $rewriteClassNameInStrings = FALSE) {
 		$this->oldName = $oldName;
 		$this->newName = $newName;
-		$this->analyzer = new \TYPO3\Zubrovka\Refactoring\Analysis\ChangeClassNameAnalyzer($oldName, $newName);
+		$this->rewriteClassNameInStrings = (bool) $rewriteClassNameInStrings;
+		$this->analyzer = new \TYPO3\Zubrovka\Refactoring\Analysis\ChangeClassNameAnalyzer($oldName, $newName, $rewriteClassNameInStrings);
 	}
 
 	/**
@@ -50,6 +56,13 @@ class RenameClassNameMission extends AbstractMission  {
 	 */
 	public function getOldName() {
 		return $this->oldName;
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function getRewriteClassNameInStrings() {
+		return $this->rewriteClassNameInStrings;
 	}
 
 }

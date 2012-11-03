@@ -1,5 +1,4 @@
 <?php
-namespace Tx\PhpParser\Test;
 
 /*                                                                        *
  * This script belongs to the FLOW3 package "Zubrovka".                   *
@@ -13,33 +12,27 @@ namespace Tx\PhpParser\Test;
 /**
  * @author Nico de Haen
  */
-class ClassMethodWithManyParameter {
+class Tx_PhpParser_Test_ClassMethodWithManyParameterAndOtherClassUsage {
 
 	/**
-	 * This is the description,
-	 * with a second line
+	 * This is the description
 	 *
 	 * @param int $number
 	 * @param string $string
 	 * @param array $arr
 	 * @param boolean $boolean
 	 * @param float $float
-	 * @param ClassMethodWithManyParameter $n
-	 * @return ClassMethodWithManyParameter
+	 * @param Tx_PhpParser_Test_ClassMethodWithManyParameter $n
+	 * @return string
 	 */
-	static private function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, ClassMethodWithManyParameter $n) {
-		/** @var $n ClassMethodWithManyParameter */
-		if ($number > 3) {
+	private static function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, Tx_PhpParser_Test_ClassMethodWithManyParameter $n) {
+		/** @var $n Tx_PhpParser_Test_ClassMethodWithManyParameter */
+		if($number > 3) {
 			return 'bar';
 		} else {
-			/** @var ClassMethodWithManyParameter $n */
-			$n = array(
-				// Let's deal with comments in arrays
-				'Tx_PhpParser_Test_ClassMethodWithManyParameter' => parent::testMethod()
-			);
-			return $n;
+			/** @var Tx_PhpParser_Test_ClassMethodWithManyParameter $n */
+			return 'foo';
 		}
+		$f = Tx_PhpParser_Test_StaticClassCall::init();
 	}
-
 }
-

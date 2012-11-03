@@ -1,4 +1,6 @@
 <?php
+namespace Tx\PhpParser\Test;
+
 /*                                                                        *
  * This script belongs to the FLOW3 package "Zubrovka".                   *
  *                                                                        *
@@ -8,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-namespace Tx\PhpParser\Test;
-
 /**
  * @author Thomas Maroschik<tmaroschik@dfau.de>
  */
@@ -17,6 +17,9 @@ class MultipleClasses {
 
 
 }
+
+
+namespace Tx\PhpParser\Test;
 
 /**
  * @author Thomas Maroschik<tmaroschik@dfau.de>

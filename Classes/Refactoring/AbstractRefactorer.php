@@ -23,7 +23,7 @@ abstract class AbstractRefactorer implements RefactorerInterface  {
 	 *
 	 * @var Mission\MissionInterface[]
 	 */
-	protected $missions;
+	protected $missions = array();
 
 	/**
 	 * Contains transaction builder
@@ -47,9 +47,20 @@ abstract class AbstractRefactorer implements RefactorerInterface  {
 	protected $stmts;
 
 	/**
+	 * Contains traverser
+	 *
+	 * @var \PHPParser_NodeTraverser
+	 */
+	protected $traverser;
+
+	/**
 	 * Constructor method for a refactorer
 	 */
 	function __construct() {
+		// This is a hacky approach, elaborate on that
+		if (isset(\PHPParser_NodeAbstract::$reservedProperties['ignorables'])) {
+			unset(\PHPParser_NodeAbstract::$reservedProperties['ignorables']);
+		}
 		$this->parser = new \PHPParser_Parser;
 		$this->traverser = new \PHPParser_NodeTraverser;
 		$this->transactionBuilder = new TransactionBuilder;
@@ -117,6 +128,7 @@ abstract class AbstractRefactorer implements RefactorerInterface  {
 	protected function analyze() {
 		$traverser = new \PHPParser_NodeTraverser;
 		$traverser->appendVisitor(new \TYPO3\Zubrovka\Parser\NodeVisiting\DocCommentNameResolver);
+		$traverser->appendVisitor(new \TYPO3\Zubrovka\Parser\NodeVisiting\LegacyVarResolver);
 		$traverser->appendVisitor(new \TYPO3\Zubrovka\Parser\NodeVisiting\NameResolver);
 		$traverser->appendVisitor (new \TYPO3\Zubrovka\Parser\NodeVisiting\NamespaceResolver);
 		foreach ($this->missions as $mission) {

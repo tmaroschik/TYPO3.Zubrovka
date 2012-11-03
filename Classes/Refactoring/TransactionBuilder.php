@@ -28,25 +28,30 @@ class TransactionBuilder {
 	 */
 	public function __construct() {
 		$tasks = array(
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeClassNameTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeFullyQualifiedNameInDocCommentTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNameTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeClassNameToNamespacedClassNameTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNamespaceNameTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNameInDocCommentTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNamespaceAndClassNameTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameInDocCommentTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\NameLeavesImportedNamespaceTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\RemoveNamespaceTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\IntroduceNamespaceTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingImportedNamespaceTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameStayingInImportedNamespaceTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingNamespaceTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameStayingInNamespaceTask',
-			'\TYPO3\Zubrovka\Refactoring\Task\ChangeNamespacedClassNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeClassNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeFullyQualifiedNameInDocCommentTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeFullyQualifiedNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeClassNameToNamespacedClassNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeNamespaceNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeNameInDocCommentTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeNamespaceAndClassNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameInDocCommentTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeClassNameInStringTask',
+			'TYPO3\Zubrovka\Refactoring\Task\NameLeavesImportedNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\RemoveNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\IntroduceNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingImportedNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingImportedNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameStayingInImportedNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameLeavingNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeRelativeNameStayingInNamespaceTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ChangeNamespacedClassNameTask',
+			'TYPO3\Zubrovka\Refactoring\Task\ExtractClassTask',
 		);
 		foreach ($tasks as $task) {
-			$this->tasks[] = new $task();
+			$className = '\\' . $task;
+			$this->tasks[] = new $className();
 		}
 	}
 

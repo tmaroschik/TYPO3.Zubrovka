@@ -21,7 +21,7 @@ class ChangeClassNameOperation extends AbstractOperation {
 	/**
 	 * Contains the class name node
 	 *
-	 * @var \PHPParser_Node_Stmt_Class
+	 * @var \PHPParser_Node_Stmt
 	 */
 	protected $node;
 
@@ -33,10 +33,10 @@ class ChangeClassNameOperation extends AbstractOperation {
 	protected $newName;
 
 	/**
-	 * @param \PHPParser_Node_Stmt_Class $node
+	 * @param \PHPParser_Node_Stmt $node
 	 * @param string $newName
 	 */
-	function __construct(\PHPParser_Node_Stmt_Class $node, $newName) {
+	function __construct(\PHPParser_Node_Stmt $node, $newName) {
 		$this->newName = (string) $newName;
 		parent::__construct($node);
 	}

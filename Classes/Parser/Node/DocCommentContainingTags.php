@@ -41,7 +41,7 @@ class DocCommentContainingTags extends \PHPParser_Node_Ignorable_DocComment {
 		'name' => FALSE,
 		'global' => FALSE,
 		'param' => TRUE,
-		'return' => FALSE,
+		'return' => TRUE,
 		'staticvar' => TRUE,
 		'category' => FALSE,
 		'staticVar' => TRUE,
@@ -185,7 +185,7 @@ class DocCommentContainingTags extends \PHPParser_Node_Ignorable_DocComment {
 			return '/** ' . $docComment[0] . ' */';
 		} else {
 			$docComment = preg_replace('/\s+$/', '', $docComment);
-			$docComment = preg_replace('/^/', ' * ', $docComment);
+			$docComment = preg_replace('/^/m', ' * ', $docComment);
 			return '/**' . PHP_EOL . implode(PHP_EOL, $docComment) . PHP_EOL . ' */';
 		}
 	}

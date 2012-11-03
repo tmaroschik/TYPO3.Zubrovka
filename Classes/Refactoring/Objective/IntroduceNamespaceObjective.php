@@ -19,7 +19,7 @@ use TYPO3\FLOW3\Annotations as FLOW3;
 class IntroduceNamespaceObjective extends AbstractObjective {
 
 	/**
-	 * @var \PHPParser_Node_Stmt_Class[]
+	 * @var \PHPParser_Node_Stmt[]
 	 */
 	protected $classNodes;
 
@@ -30,7 +30,7 @@ class IntroduceNamespaceObjective extends AbstractObjective {
 
 	/**
 	 * @param array $newName
-	 * @param \PHPParser_Node_Stmt_Class[] $classNodes
+	 * @param \PHPParser_Node_Stmt[] $classNodes
 	 */
 	public function __construct(array $newName, array $classNodes = array()) {
 		$this->newName = $newName;
@@ -46,7 +46,7 @@ class IntroduceNamespaceObjective extends AbstractObjective {
 	}
 
 	/**
-	 * @return \PHPParser_Node_Stmt_Class[]
+	 * @return \PHPParser_Node_Stmt[]
 	 */
 	public function getClassNodes() {
 		return $this->classNodes;

@@ -14,7 +14,8 @@
 class ClassMethodWithManyParameter {
 
 	/**
-	 * This is the description
+	 * This is the description,
+	 * with a second line
 	 *
 	 * @param int $number
 	 * @param string $string
@@ -22,7 +23,7 @@ class ClassMethodWithManyParameter {
 	 * @param boolean $boolean
 	 * @param float $float
 	 * @param ClassMethodWithManyParameter $n
-	 * @return string
+	 * @return ClassMethodWithManyParameter
 	 */
 	static private function testMethod($number, $stringParam, array $arr, $booleanParam = FALSE, $float = 0.2, ClassMethodWithManyParameter $n) {
 		/** @var $n ClassMethodWithManyParameter */
@@ -30,7 +31,11 @@ class ClassMethodWithManyParameter {
 			return 'bar';
 		} else {
 			/** @var ClassMethodWithManyParameter $n */
-			return 'foo';
+			$n = array(
+				// Let's deal with comments in arrays
+				'Tx_PhpParser_Test_ClassMethodWithManyParameter' => parent::testMethod()
+			);
+			return $n;
 		}
 	}
 

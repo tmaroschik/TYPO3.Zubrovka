@@ -30,7 +30,7 @@ class RemoveNamespaceObjective extends AbstractObjective {
 
 	/**
 	 * @param array $newName
-	 * @param \PHPParser_Node_Stmt_Class[] $classNodes
+	 * @param \PHPParser_Node_Stmt[] $classNodes
 	 */
 	public function __construct(\PHPParser_Node_Stmt_Namespace $namespace, array $classNodes = array()) {
 		$this->namespace = $namespace;
@@ -46,7 +46,7 @@ class RemoveNamespaceObjective extends AbstractObjective {
 	}
 
 	/**
-	 * @return \PHPParser_Node_Stmt_Class[]
+	 * @return \PHPParser_Node_Stmt[]
 	 */
 	public function getClassNodes() {
 		return $this->classNodes;

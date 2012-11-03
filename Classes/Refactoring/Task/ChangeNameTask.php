@@ -56,6 +56,14 @@ class ChangeNameTask extends AbstractSubObjectiveTask {
 				new \TYPO3\Zubrovka\Refactoring\Objective\ChangeRelativeNameObjective($name, $newName)
 			);
 			return -50;
+		} elseif (NULL === $namespace && $name->isUnqualified() && $newName->isFullyQualified()) {
+			$this->operations = array(
+				$this->operationFactory->create(
+					'\TYPO3\Zubrovka\Refactoring\Operation\ReplaceNameWithFullyQualifiedNameOperation',
+					$name, clone $newName
+				)
+			);
+			return 20;
 		}
 		return 0;
 	}

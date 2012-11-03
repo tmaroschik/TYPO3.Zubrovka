@@ -33,6 +33,17 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	/**
 	 * @test
 	 */
+	public function renameSimpleInterface() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Tests_Interface', 'ARenamedInterface'));
+		$codeRefactorer->load($this->getSource('InterfaceWithAMethod'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('RenameSimpleInterface'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
 	public function renameSimpleNamespace() {
 		$codeRefactorer = new Refactoring\CodeRefactorer();
 		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Test\Model\SimpleNamepaceTest', 'Test\Test2\SimpleNamepaceTest'));
@@ -233,6 +244,19 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	/**
 	 * @test
 	 */
+	public function introduceNamespaceAndChangeNames() {
+		$codeRefactorer = new Refactoring\CodeRefactorer();
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_ClassMethodWithManyParameterAndOtherClassUsage', '\Tx\PhpParser\Test\ClassMethodWithManyParameterAndOtherClassUsage'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_ClassMethodWithManyParameter', '\Tx\PhpParser\Test2\ClassMethodWithManyParameter'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('Tx_PhpParser_Test_StaticClassCall', '\Tx\PhpParser\Static\ClassCall'));
+		$codeRefactorer->load($this->getSource('ClassMethodWithManyParameterAndStaticClassUsage'));
+		$codeRefactorer->refactor();
+		$this->assertEquals($this->getTarget('IntroduceNamespaceAndChangeNames'), $codeRefactorer->save());
+	}
+
+	/**
+	 * @test
+	 */
 	public function removeSimpleNamespace() {
 		$codeRefactorer = new Refactoring\CodeRefactorer();
 		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Test\Model\SimpleNamepaceTest', 'Test_Model_SimpleNamespaceTest'));
@@ -245,14 +269,14 @@ class ClassNameRewriterTest extends \TYPO3\FLOW3\Tests\FunctionalTestCase {
 	 * @test
 	 */
 	public function removeNs() {
-		$this->markTestIncomplete('Just a testing test.');
+		$this->markTestSkipped('Under construction.');
 		$codeRefactorer = new Refactoring\CodeRefactorer();
-		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\OneToOne', '\TYPO3\FLOW3\Annotations\SomeOther'));
-		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\ManyToOne', '\TYPO3\FLOW3\Annotations\SomeOther'));
-		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('\Doctrine\ORM\Mapping\ManyToMany', '\TYPO3\FLOW3\Annotations\SomeOther'));
-		$person = file_get_contents('/Users/tmaroschik/Sites/Zubrovka/Packages/Framework/TYPO3.Party/Classes/Domain/Model/Person.php');
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('t3lib_pageSelect', '\TYPO3\Library\PageSelect'));
+		$codeRefactorer->appendMission(new Refactoring\Mission\RenameClassNameMission('t3lib_div', '\TYPO3\Library\Utility'));
+		$person = file_get_contents('/Users/tmaroschik/Sites/typo3_src-4.7.1/t3lib/class.t3lib_page.php');
 		$codeRefactorer->load($person);
 		$codeRefactorer->refactor();
+		echo $codeRefactorer->save();
 		$this->assertEquals($person, $codeRefactorer->save());
 	}
 
